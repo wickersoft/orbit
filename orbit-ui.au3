@@ -138,15 +138,13 @@ EndFunc   ;==>drawBase
 Func drawOrbit($iwidth, $iheight, $Orbit, $simOffsetSeconds)
 	Dim $NEAR_TIME_STEPS[25] = [0, 1, 2, 3, 4, 5, 6, 7, 14, 21, 28, 56, 84, 112, 140, 168, 196, 224, 252, 280, 308, 336, 364, 730, 1095]
 
-	;msgbox(0, "", $periapsisTime & @CRLF & _NowCalcDate() & @CRLF & $timeToPeriapsis)
-
 	For $time = 0 To 24
 		$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds - $NEAR_TIME_STEPS[$time] * 86400)
-        $pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		$cartesian[1] = 0
 		$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
-		
+
 		$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds + $NEAR_TIME_STEPS[$time] * 86400)
 		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		$cartesian[1] = 0
@@ -160,7 +158,7 @@ Func drawOrbit($iwidth, $iheight, $Orbit, $simOffsetSeconds)
 	$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 	For $trueAnomaly = -$Orbit[11] To $Orbit[11] * 1.01 Step 0.04
 		$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
-        $pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		$cartesian[1] = 0
 		$pixel_flat_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenRed)
@@ -169,8 +167,8 @@ Func drawOrbit($iwidth, $iheight, $Orbit, $simOffsetSeconds)
 		$pixel = $pixel_new
 	Next
 
-    $cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds)	
-    $pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+	$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds)
+	$pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 	_GDIPlus_GraphicsFillEllipse($hGraphic, $pixel[0] - 3, $pixel[1] - 3, 6, 6, $hRedBrush)
 	_GDIPlus_GraphicsDrawStringExEx($hGraphic, $Orbit[8], $pixel[0] - 60, $pixel[1] - 20, 400, 100, $hRedBrush)
 EndFunc   ;==>drawOrbit
