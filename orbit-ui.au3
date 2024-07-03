@@ -60,8 +60,14 @@ For $i = -200 To 200
 Next
 
 $hGraphicGui = _GDIPlus_GraphicsCreateFromHWND($Form1)
-$i = -3.141 / 7
-$simOffsetSeconds = -8640000.0
+$viewAz = -1/7 * 3.1415926535
+$viewAlt = 7/18 * 3.1415926535
+$simOffsetSeconds = 0
+
+Dim $LABEL_FRAME[8] = [-Cos($viewAz) / $kmPerPixel, 0 / $kmPerPixel, -Sin($viewAz) / $kmPerPixel, 0.5 * $resolution, _
+	 -Cos($viewAlt) * Sin($viewAz) / $kmPerPixel, -Sin($viewAlt) / $kmPerPixel, Cos($viewAlt) * Cos($viewAz) / $kmPerPixel, 0.4 * $resolution]
+render($simOffsetSeconds, $LABEL_FRAME)
+    
 While 1
 	$nMsg = GUIGetMsg()
 	Switch $nMsg
@@ -71,11 +77,13 @@ While 1
 	EndSwitch
 
 
-	Dim $LABEL_FRAME[8] = [-Cos($i), 0, -Sin($i), 0.5 * $resolution, -0.7 * Sin($i), -0.7, 0.7 * Cos($i), 0.4 * $resolution]
-	;Dim $LABEL_FRAME[8] = [1, 0, 0, 0.5 * $resolution, 0, sin($i), Cos($i), 0.4 * $resolution]
-	render($resolution, 0.8 * $resolution, $simOffsetSeconds)
-	$i += 0.01
-	$simOffsetSeconds += 100000
+	;Dim $LABEL_FRAME[8] = [-Cos($i) / $kmPerPixel, 0 / $kmPerPixel, -Sin($i) / $kmPerPixel, 0.5 * $resolution, _
+	;		 -0.7 * Sin($i) / $kmPerPixel, -0.7 / $kmPerPixel, 0.7 * Cos($i) / $kmPerPixel, 0.4 * $resolution]
+	Dim $LABEL_FRAME[8] = [-Cos($viewAz) / $kmPerPixel, 0 / $kmPerPixel, -Sin($viewAz) / $kmPerPixel, 0.5 * $resolution, _
+	 -Cos($viewAlt) * Sin($viewAz) / $kmPerPixel, -Sin($viewAlt) / $kmPerPixel, Cos($viewAlt) * Cos($viewAz) / $kmPerPixel, 0.4 * $resolution]
+    render($simOffsetSeconds, $LABEL_FRAME)
+	$viewAz += 0.01
+    ;$simOffsetSeconds += 100000
 WEnd
 
 _GDIPlus_GraphicsDispose($hGraphic)
