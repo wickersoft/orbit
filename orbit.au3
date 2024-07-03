@@ -100,14 +100,14 @@ EndFunc   ;==>calcCartesianCoords
 
 
 Func calcEllipticalMeanAnomaly($specAngMom, $eccentricity, $secondsFromPeriapsis)
-	$semiMajorAxis = $specAngMom ^ 2 / ($SUN_MU * (1 - $eccentricity^2))
-    ;ConsoleWrite("Semi-major axis: " & $semiMajorAxis & "Km" & @CRLF)
+	$semiMajorAxis = $specAngMom ^ 2 / ($SUN_MU * (1 - $eccentricity ^ 2))
+	;ConsoleWrite("Semi-major axis: " & $semiMajorAxis & "Km" & @CRLF)
 
 	$orbitalPeriod = 2 * 3.14159265359 / Sqrt($SUN_MU) * $semiMajorAxis ^ (3 / 2)
 	$ellMeanAnomaly = 2 * 3.14159265359 * $secondsFromPeriapsis / $orbitalPeriod
-    ;ConsoleWrite("Me: " & $ellMeanAnomaly & @CRLF)
+	;ConsoleWrite("Me: " & $ellMeanAnomaly & @CRLF)
 
-    return $ellMeanAnomaly
+	Return $ellMeanAnomaly
 EndFunc   ;==>calcEllipticalMeanAnomaly
 
 Func calcEllEccentricAnomaly($specAngMom, $eccentricity, $secondsFromPeriapsis)
@@ -137,14 +137,14 @@ EndFunc   ;==>calcEllipticalTrueAnomaly
 
 
 Func calcParabolicMeanAnomaly($specAngMom, $secondsFromPeriapsis)
-	Return $SUN_MU^2 / $specAngMom^3 * $secondsFromPeriapsis
-EndFunc   ;==>calcEllipticalMeanAnomaly
+	Return $SUN_MU ^ 2 / $specAngMom ^ 3 * $secondsFromPeriapsis
+EndFunc   ;==>calcParabolicMeanAnomaly
 
 Func calcParabolicTrueAnomaly($specAngMom, $secondsFromPeriapsis)
-    $paraMeanAnomaly = calcParabolicMeanAnomaly($specAngMom, $secondsFromPeriapsis)
-	$z = (3*$paraMeanAnomaly + sqrt(1 + (3*$paraMeanAnomaly)^2))^(1/3)
-	Return 2 * ATan($z - 1/$z)
-EndFunc   ;==>calcEllipticalTrueAnomaly
+	$paraMeanAnomaly = calcParabolicMeanAnomaly($specAngMom, $secondsFromPeriapsis)
+	$z = (3 * $paraMeanAnomaly + Sqrt(1 + (3 * $paraMeanAnomaly) ^ 2)) ^ (1 / 3)
+	Return 2 * ATan($z - 1 / $z)
+EndFunc   ;==>calcParabolicTrueAnomaly
 
 
 ; ========== HYPERBOLIC ===========
