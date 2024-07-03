@@ -104,8 +104,12 @@ Func render($iwidth, $iheight, $simOffsetSeconds)
 	ConsoleWrite("Biela: " & TimerDiff($time) & "ms" & @CRLF)
 
 	$time = TimerInit()
-	;drawOrbit($iwidth, $iheight, $ORBIT_SWIFT_TUTTLE)
-	;ConsoleWrite("Tuttle: " & TimerDiff($time) & "ms" & @CRLF)
+	drawOrbit($iwidth, $iheight, $ORBIT_SWIFT_TUTTLE, $simOffsetSeconds)
+	ConsoleWrite("Swift-Tuttle: " & TimerDiff($time) & "ms" & @CRLF)
+
+	$time = TimerInit()
+	drawOrbit($iwidth, $iheight, $ORBIT_TSUCHINSHAN, $simOffsetSeconds)
+	ConsoleWrite("Tsuchinshan: " & TimerDiff($time) & "ms" & @CRLF)
 
 	$time = TimerInit()
 	drawOrbit($iwidth, $iheight, $ORBIT_EARTH, $simOffsetSeconds)
