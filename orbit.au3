@@ -21,7 +21,7 @@ Func _Orbit_FromMPCElements($MPCElements)
 	$Orbit[9] =  _Orbit_CalcSpecificAngMomentum($Orbit)                                 ; Specific angular momentum
 	$Orbit[10] = _Orbit_CalcMeanMotion($Orbit)                                          ; Mean angular motion
 	$Orbit[11] = _Orbit_CalcAsymptoticTrueAnomaly($Orbit)                               ; Asymptotic True Anomaly (pi for non-hyperbolic)
-	$Orbit[12] = _Orbit_CalcSecondsSincePeriapsisAtTime($Orbit, $_ORBIT_REFERENCE_DATE)  ; Seconds from reference time to periapsis
+	$Orbit[12] = _Orbit_CalcRefTimeAtDate($Orbit[0])                                    ; Seconds from reference time to periapsis
 
 	Return $Orbit
 EndFunc   ;==>_Orbit_FromMPCElements
@@ -41,11 +41,11 @@ EndFunc   ;==>getPeriapsisTime
 ; ========  CACHED AFTER PARSING ======
 
 
-Func _Orbit_CalcSpecificAngMomentum($Orbit)
+Func _Orbit_CalcSpecificAngMomentum(ByRef $Orbit)
 	Return Sqrt(($Orbit[2] + 1) * ($Orbit[1] * 1.5e8 * $SUN_MU))
 EndFunc   ;==>_Orbit_CalcSpecificAngMomentum
 
-Func _Orbit_CalcMeanMotion($Orbit)
+Func _Orbit_CalcMeanMotion(ByRef $Orbit)
 	If $Orbit[2] > 1 Then
 		Return _Orbit_CalcHyperbolicMeanMotion($Orbit)
 	ElseIf $Orbit[2] < 1 Then
@@ -55,7 +55,7 @@ Func _Orbit_CalcMeanMotion($Orbit)
 	EndIf
 EndFunc   ;==>_Orbit_CalcMeanMotion
 
-Func _Orbit_CalcAsymptoticTrueAnomaly($Orbit)
+Func _Orbit_CalcAsymptoticTrueAnomaly(ByRef $Orbit)
 	If $Orbit[2] <= 1 Then Return 3.14159265359
 	Return ACos(-1 / $Orbit[2])
 EndFunc   ;==>_Orbit_CalcAsymptoticTrueAnomaly
@@ -65,12 +65,12 @@ EndFunc   ;==>_Orbit_CalcAsymptoticTrueAnomaly
 
 #cs
 
-FROM:       TO: DATE    REFTIME SEC.SINCE.PERI  POLAR   TRUE.ANOMALY    CARTESIAN   RADIUS  SPEED
-DATE            *       YES     ind1            ind2    ind2            ind2                 
-REFTIME                 *       YES             ind2                    ind2                 
-SEC.SINCE.PERI                  *               ind1    YES             ind2                 
-POLAR                                           *       (yes)           YES         (yes)   
-TRUE.ANOMALY                                            *               ind1        YES     
+FROM:       TO: DATE    REFTIME SEC.SINCE.PERI  TRUE.ANOMALY    POLAR   CARTESIAN   RADIUS  SPEED
+DATE            *       YES     ind1            ind2            ind2    ind3                 
+REFTIME                 *       YES                             ind2    ind2                 
+SEC.SINCE.PERI                  *               YES             ind1    ind2                 
+TRUE.ANOMALY                                    *                       ind1        YES     
+POLAR                                                           *       YES           
 CARTESIAN                                                               *                   
 RADIUS                                                                              *       YES
 SPEED                                                                                       *
@@ -81,23 +81,25 @@ SPEED                                                                           
 ; ========== DIRECT CALCULATIONS ===========
 
 
-Func _Orbit_CalcRefTimeAtTime($time = _NowCalcDate())
+Func _Orbit_CalcRefTimeAtDate($time = _NowCalcDate())
+    ConsoleWrite("RefTime: " & $_ORBIT_REFERENCE_DATE & " " & $time & " " & _DateDiff("s", $_ORBIT_REFERENCE_DATE, $time) & @CRLF)
+    
     Return _DateDiff("s", $_ORBIT_REFERENCE_DATE, $time)
 EndFunc
 
-Func _Orbit_CalcSecondsSincePeriapsisAtRefTime($Orbit, $refTime)
+Func _Orbit_CalcSecondsSincePeriapsisAtRefTime(ByRef $Orbit, $refTime)
     Return $refTime - $Orbit[12]
 EndFunc
 
-Func _Orbit_CalcSpeedAtDistanceKm($Orbit, $distanceKm)
+Func _Orbit_CalcSpeedAtDistanceKm(ByRef $Orbit, $distanceKm)
 	Return $Orbit[9] / $distanceKm
 EndFunc   ;==>_Orbit_CalcSpeedAtDistance
 
-Func _Orbit_CalcOrbitRadiusKmAtTrueAnomaly($Orbit, $trueAnomaly)
+Func _Orbit_CalcOrbitRadiusKmAtTrueAnomaly(ByRef $Orbit, $trueAnomaly)
 	Return $Orbit[9] ^ 2 / $SUN_MU / (1 + $Orbit[2] * Cos($trueAnomaly))
 EndFunc   ;==>_Orbit_CalcOrbitRadiusKmAtTrueAnomaly
 
-Func _Orbit_CalcTrueAnomalyAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
+Func _Orbit_CalcTrueAnomalyAtSecondsSincePeriapsis(ByRef $Orbit, $SecondsSincePeriapsis)
     If $Orbit[2] > 1 Then
 		Return _Orbit_CalcHyperbolicTrueAnomaly($Orbit, $SecondsSincePeriapsis)
 	ElseIf $Orbit[2] < 1 Then
@@ -107,7 +109,7 @@ Func _Orbit_CalcTrueAnomalyAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsi
 	EndIf
 EndFunc
 
-Func _Orbit_CalcCartesianCoordsAtPolarCoords($Orbit, $polar)
+Func _Orbit_CalcCartesianCoordsAtPolarCoords(ByRef $Orbit, $polar)
     Dim $cartesian[3] = [0, 0, 0]
     
     ; _Orbit_Calcualte in-plane coordinates and argument of periapsis
@@ -133,7 +135,7 @@ EndFunc
 ;  ELLIPTICAL ORBITS
 
 
-Func _Orbit_CalcEllipticalMeanMotion($Orbit)
+Func _Orbit_CalcEllipticalMeanMotion(ByRef $Orbit)
 	$semiMajorAxis = $Orbit[9] ^ 2 / ($SUN_MU * (1 - $Orbit[2] ^ 2))
 	;ConsoleWrite("Semi-major axis: " & $semiMajorAxis & "Km" & @CRLF)
 
@@ -144,7 +146,7 @@ Func _Orbit_CalcEllipticalMeanMotion($Orbit)
 	Return $ellMeanAnomaly
 EndFunc   ;==>_Orbit_CalcEllipticalMeanMotion
 
-Func _Orbit_CalcEllEccentricAnomaly($Orbit, $SecondsSincePeriapsis)
+Func _Orbit_CalcEllEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 	$meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
 
 	$E = 3.14159
@@ -160,7 +162,7 @@ Func _Orbit_CalcEllEccentricAnomaly($Orbit, $SecondsSincePeriapsis)
 	Return $E
 EndFunc   ;==>_Orbit_CalcEllEccentricAnomaly
 
-Func _Orbit_CalcEllipticalTrueAnomaly($Orbit, $SecondsSincePeriapsis)
+Func _Orbit_CalcEllipticalTrueAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 	$ellEccAnomaly = _Orbit_CalcEllEccentricAnomaly($Orbit, $SecondsSincePeriapsis)
 	Return 2 * ATan(Sqrt((1 + $Orbit[2]) / (1 - $Orbit[2])) * Tan($ellEccAnomaly / 2))
 EndFunc   ;==>_Orbit_CalcEllipticalTrueAnomaly
@@ -169,11 +171,11 @@ EndFunc   ;==>_Orbit_CalcEllipticalTrueAnomaly
 ; PARABOLIC ORBITS
 
 
-Func _Orbit_CalcParabolicMeanMotion($Orbit)
+Func _Orbit_CalcParabolicMeanMotion(ByRef $Orbit)
 	Return $SUN_MU ^ 2 / $Orbit[9] ^ 3
 EndFunc   ;==>_Orbit_CalcParabolicMeanMotion
 
-Func _Orbit_CalcParabolicTrueAnomaly($Orbit, $SecondsSincePeriapsis)
+Func _Orbit_CalcParabolicTrueAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 	$meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
 	$z = (3 * $meanAnomaly + Sqrt(1 + (3 * $meanAnomaly) ^ 2)) ^ (1 / 3)
 	Return 2 * ATan($z - 1 / $z)
@@ -183,11 +185,11 @@ EndFunc   ;==>_Orbit_CalcParabolicTrueAnomaly
 ; HYPERBOLIC ORBITS
 
 
-Func _Orbit_CalcHyperbolicMeanMotion($Orbit)
+Func _Orbit_CalcHyperbolicMeanMotion(ByRef $Orbit)
 	Return ($SUN_MU ^ 2 / $Orbit[9] ^ 3) * ($Orbit[2] ^ 2 - 1) ^ (3 / 2)
 EndFunc   ;==>_Orbit_CalcHyperbolicMeanMotion
 
-Func _Orbit_CalcHypEccentricAnomaly($Orbit, $SecondsSincePeriapsis)
+Func _Orbit_CalcHypEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 	$meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
 
 	$F = 3.14159
@@ -203,7 +205,7 @@ Func _Orbit_CalcHypEccentricAnomaly($Orbit, $SecondsSincePeriapsis)
 	Return $F
 EndFunc   ;==>_Orbit_CalcHypEccentricAnomaly
 
-Func _Orbit_CalcHyperbolicTrueAnomaly($Orbit, $SecondsSincePeriapsis)
+Func _Orbit_CalcHyperbolicTrueAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 	$hypEccAnomaly = _Orbit_CalcHypEccentricAnomaly($Orbit, $SecondsSincePeriapsis)
 	$nu = (2 * ATan(Sqrt(($Orbit[2] + 1) / ($Orbit[2] - 1)) * tanh($hypEccAnomaly / 2)))
 	;If $nu < 0 Then $nu += 3.14159265359
@@ -228,12 +230,12 @@ EndFunc   ;==>tanh
 ; ========= INDIRECT 1 DEGREE =============
 
 
-Func _Orbit_CalcSecondsSincePeriapsisAtTime($Orbit, $time = _NowCalcDate())
-    $refTime = _Orbit_CalcRefTimeAtTime($time)
+Func _Orbit_CalcSecondsSincePeriapsisAtDate(ByRef $Orbit, $time = _NowCalcDate())
+    $refTime = _Orbit_CalcRefTimeAtDate($time)
     Return _Orbit_CalcSecondsSincePeriapsisAtRefTime($Orbit, $refTime)
 EndFunc
 
-Func _Orbit_CalcPolarCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
+Func _Orbit_CalcPolarCoordsAtSecondsSincePeriapsis(ByRef $Orbit, $SecondsSincePeriapsis)
 	Dim $polar[2]
 
 	$trueAnomaly = _Orbit_CalcTrueAnomalyAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
@@ -245,8 +247,8 @@ Func _Orbit_CalcPolarCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsi
 	Return $polar
 EndFunc   ;==>_Orbit_CalcPolarCoordsForTime
 
-Func _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
-    Dim $polar[2] = [$trueAnomaly, _Orbit_CalcOrbitRadiusKmAtTrueAnomaly($Orbit, $trueAnomaly)]
+Func _Orbit_CalcCartesianCoordsAtTrueAnomaly(ByRef $Orbit, $trueAnomaly)
+    Dim $polar[2] = [_Orbit_CalcOrbitRadiusKmAtTrueAnomaly($Orbit, $trueAnomaly), $trueAnomaly]
     Return _Orbit_CalcCartesianCoordsAtPolarCoords($Orbit, $polar)
 EndFunc   ;==>_Orbit_CalcCartesianCoordsAtTrueAnomaly
 
@@ -254,32 +256,36 @@ EndFunc   ;==>_Orbit_CalcCartesianCoordsAtTrueAnomaly
 ; ========== INDIRECT 2 DEGREES ==========
 
 
-Func _Orbit_CalcPolarCoordsAtTime($Orbit, $time = _NowCalcDate())
-    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtTime($Orbit, $time)
-    Return _Orbit_CalcPolarCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
-EndFunc
-
-Func _Orbit_CalcPolarCoordsAtRefTime($Orbit, $refTime)
+Func _Orbit_CalcPolarCoordsAtRefTime(ByRef $Orbit, $refTime)
     $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtRefTime($Orbit, $refTime)
     Return _Orbit_CalcPolarCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
 EndFunc
 
-Func _Orbit_CalcTrueAnomalyAtTime($Orbit, $time = _NowCalcDate())
-    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtTime($Orbit, $time)
+Func _Orbit_CalcTrueAnomalyAtDate(ByRef $Orbit, $time = _NowCalcDate())
+    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtDate($Orbit, $time)
     Return _Orbit_CalcTrueAnomalyAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
 EndFunc
 
-Func _Orbit_CalcCartesianCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
+Func _Orbit_CalcPolarCoordsAtDate(ByRef $Orbit, $time = _NowCalcDate())
+    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtDate($time)
+    Return _Orbit_CalcPolarCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
+EndFunc
+
+Func _Orbit_CalcCartesianCoordsAtRefTime(ByRef $Orbit, $refTime)
+    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtRefTime($Orbit, $refTime)
+    Return _Orbit_CalcCartesianCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
+EndFunc
+
+Func _Orbit_CalcCartesianCoordsAtSecondsSincePeriapsis(ByRef $Orbit, $SecondsSincePeriapsis)
     $trueAnomaly = _Orbit_CalcTrueAnomalyAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
     return _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
 EndFunc
 
-Func _Orbit_CalcCartesianCoordsAtTime($Orbit, $time = _NowCalcDate())
-    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtTime($Orbit, $time)
-    Return _Orbit_CalcCartesianCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
-EndFunc
 
-Func _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $refTime)
-    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtRefTime($Orbit, $refTime)
-    Return _Orbit_CalcCartesianCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
+; ========== INDIRECT 3 DEGREES ==========
+
+
+Func _Orbit_CalcCartesianCoordsAtDate(ByRef $Orbit, $time = _NowCalcDate())
+    $trueAnomaly = _Orbit_CalcTrueAnomalyAtDate($Orbit, $time)
+    Return _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
 EndFunc
