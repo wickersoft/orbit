@@ -1,2 +1,2 @@
 # orbit
-AutoIt library for calculating planet and comet orbits
+Collection of AutoIt UDFs for calculating planet and comet orbits
