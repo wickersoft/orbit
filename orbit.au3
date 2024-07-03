@@ -115,7 +115,7 @@ Func calcEllEccentricAnomaly($specAngMom, $eccentricity, $secondsFromPeriapsis)
 
 	$E = 3.14159
 
-	For $i = 0 To 20
+	For $i = 0 To 10
 		;ConsoleWrite("E" & $i & ": " & $E & @CRLF)
 		$ex = $E - $eccentricity * Sin($E) - $ellMeanAnomaly ; Kepler
 		$exdx = 1 - $eccentricity * Cos($E) ; Kepler_d_dF
@@ -158,7 +158,7 @@ Func calcHypEccentricAnomaly($specAngMom, $eccentricity, $secondsFromPeriapsis)
 
 	$F = 3.14159
 
-	For $i = 0 To 100
+	For $i = 0 To 10
 		;ConsoleWrite("F" & $i & ": " & $F & @CRLF)
 		$fx = $eccentricity * sinh($F) - $F - $meanHypAnomaly ; Kepler
 		$fxdx = $eccentricity * cosh($F) - 1 ; Kepler_d_dF
