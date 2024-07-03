@@ -83,7 +83,6 @@ SPEED                                                                           
 
 Func _Orbit_CalcRefTimeAtDate($time = _NowCalcDate())
     ConsoleWrite("RefTime: " & $_ORBIT_REFERENCE_DATE & " " & $time & " " & _DateDiff("s", $_ORBIT_REFERENCE_DATE, $time) & @CRLF)
-    
     Return _DateDiff("s", $_ORBIT_REFERENCE_DATE, $time)
 EndFunc
 
@@ -151,7 +150,7 @@ Func _Orbit_CalcEllEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 
 	$E = 3.14159
 
-	For $i = 0 To 10
+	For $i = 0 To 25
 		;ConsoleWrite("E" & $i & ": " & $E & @CRLF)
 		$ex = $E - $Orbit[2] * Sin($E) - $meanAnomaly ; Kepler
 		$exdx = 1 - $Orbit[2] * Cos($E) ; Kepler_d_dF
@@ -192,9 +191,10 @@ EndFunc   ;==>_Orbit_CalcHyperbolicMeanMotion
 Func _Orbit_CalcHypEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 	$meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
 
+    ;ConsoleWrite("Initial M: " & $meanAnomaly & @CRLF)
 	$F = 3.14159
 
-	For $i = 0 To 10
+	For $i = 0 To 25
 		;ConsoleWrite("F" & $i & ": " & $F & @CRLF)
 		$fx = $Orbit[2] * sinh($F) - $F - $meanAnomaly ; Kepler
 		$fxdx = $Orbit[2] * cosh($F) - 1 ; Kepler_d_dF
@@ -267,7 +267,7 @@ Func _Orbit_CalcTrueAnomalyAtDate(ByRef $Orbit, $time = _NowCalcDate())
 EndFunc
 
 Func _Orbit_CalcPolarCoordsAtDate(ByRef $Orbit, $time = _NowCalcDate())
-    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtDate($time)
+    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtDate($Orbit, $time)
     Return _Orbit_CalcPolarCoordsAtSecondsSincePeriapsis($Orbit, $SecondsSincePeriapsis)
 EndFunc
 
