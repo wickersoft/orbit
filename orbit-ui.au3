@@ -86,70 +86,72 @@ _GDIPlus_BrushDispose($hBlackBrush)
 _GDIPlus_BrushDispose($hRedBrush)
 
 
-Func render($iwidth, $iheight, $simOffsetSeconds)
+Func render($simOffsetSeconds, ByRef $perspective)
 	$time = TimerInit()
 
 	_GDIPlus_GraphicsClear($hGraphic, 0xFFFFFFFF)
 
-	drawBase($iwidth, $iheight)
-	
-    drawOrbit($iwidth, $iheight, $ORBIT_BIELA, $simOffsetSeconds)
-	drawOrbit($iwidth, $iheight, $ORBIT_SWIFT_TUTTLE, $simOffsetSeconds)
-	drawOrbit($iwidth, $iheight, $ORBIT_TSUCHINSHAN, $simOffsetSeconds)
-	drawOrbit($iwidth, $iheight, $ORBIT_EARTH, $simOffsetSeconds)
+	drawBase($perspective)
 
-    ConsoleWrite("Frame: " & TimerDiff($time) & "ms" & @CRLF)
+	;drawOrbit($ORBIT_BIELA, $simOffsetSeconds, $perspective)
+	;drawOrbit($ORBIT_SWIFT_TUTTLE, $simOffsetSeconds, $perspective)
+	drawOrbit($ORBIT_TSUCHINSHAN, $simOffsetSeconds, $perspective)
+	drawOrbit($ORBIT_EARTH, $simOffsetSeconds, $perspective)
+
+	ConsoleWrite("Frame: " & TimerDiff($time) & "ms" & @CRLF)
 
 	_GDIPlus_GraphicsDrawImage($hGraphicGui, $himage, 0, 0)
 EndFunc   ;==>render
 
-Func drawBase($iwidth, $iheight)
+Func drawBase($perspective)
 	For $i = -20 To 20
 		Dim $gridCoords1[3] = [$i * 1.5e8, 0, -3e9]
 		Dim $gridCoords2[3] = [$i * 1.5e8, 0, 3e9]
-		$pixel1 = projectToCanvasCoords($gridCoords1, $LABEL_FRAME)
-		$pixel2 = projectToCanvasCoords($gridCoords2, $LABEL_FRAME)
+		$pixel1 = projectToCanvasCoords($gridCoords1, $perspective)
+		$pixel2 = projectToCanvasCoords($gridCoords2, $perspective)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel1[0], $pixel1[1], $pixel2[0], $pixel2[1], $hPenLGray)
 	Next
 	For $i = -20 To 20
 		Dim $gridCoords1[3] = [-3e9, 0, $i * 1.5e8]
 		Dim $gridCoords2[3] = [3e9, 0, $i * 1.5e8]
-		$pixel1 = projectToCanvasCoords($gridCoords1, $LABEL_FRAME)
-		$pixel2 = projectToCanvasCoords($gridCoords2, $LABEL_FRAME)
+		$pixel1 = projectToCanvasCoords($gridCoords1, $perspective)
+		$pixel2 = projectToCanvasCoords($gridCoords2, $perspective)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel1[0], $pixel1[1], $pixel2[0], $pixel2[1], $hPenLGray)
 	Next
 
 	Dim $cartesian[3] = [0, 0, 0]
-	$pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+	$pixel = projectToCanvasCoords($cartesian, $perspective)
 	_GDIPlus_GraphicsFillEllipse($hGraphic, $pixel[0] - 2, $pixel[1] - 2, 4, 4, $hBlackBrush)
 EndFunc   ;==>drawBase
 
-Func drawOrbit($iwidth, $iheight, $Orbit, $simOffsetSeconds)
+Func drawOrbit($Orbit, $simOffsetSeconds, $perspective)
+    
+    ; Draw out-of-ecliptic "Supporting lines" 
 	Dim $NEAR_TIME_STEPS[25] = [0, 1, 2, 3, 4, 5, 6, 7, 14, 21, 28, 56, 84, 112, 140, 168, 196, 224, 252, 280, 308, 336, 364, 730, 1095]
-
 	For $time = 0 To 24
 		$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds - $NEAR_TIME_STEPS[$time] * 86400)
-		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$pixel_new = projectToCanvasCoords($cartesian, $perspective)
 		$cartesian[1] = 0
-		$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$pixel_flat = projectToCanvasCoords($cartesian, $perspective)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
 
 		$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds + $NEAR_TIME_STEPS[$time] * 86400)
-		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$pixel_new = projectToCanvasCoords($cartesian, $perspective)
 		$cartesian[1] = 0
-		$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$pixel_flat = projectToCanvasCoords($cartesian, $perspective)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
 	Next
 
+    ; Draw Orbit and "supporting" projection into ecliptic
 	$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, -$Orbit[11])
-	$pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+	$pixel = projectToCanvasCoords($cartesian, $perspective)
 	$cartesian[1] = 0
-	$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
-	For $trueAnomaly = -$Orbit[11] To $Orbit[11] * 1.01 Step 0.04
+	$pixel_flat = projectToCanvasCoords($cartesian, $perspective)
+	For $trueAnomaly = -$Orbit[11] To $Orbit[11] * 1.01 Step 0.05
 		$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
-		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$pixel_new = projectToCanvasCoords($cartesian, $perspective)
 		$cartesian[1] = 0
-		$pixel_flat_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$pixel_flat_new = projectToCanvasCoords($cartesian, $perspective)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenRed)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_flat[0], $pixel_flat[1], $pixel_flat_new[0], $pixel_flat_new[1], $hPenLGray)
 		$pixel_flat = $pixel_flat_new
@@ -157,21 +159,16 @@ Func drawOrbit($iwidth, $iheight, $Orbit, $simOffsetSeconds)
 	Next
 
 	$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds)
-	$pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+	$pixel = projectToCanvasCoords($cartesian, $perspective)
 	_GDIPlus_GraphicsFillEllipse($hGraphic, $pixel[0] - 3, $pixel[1] - 3, 6, 6, $hRedBrush)
 	_GDIPlus_GraphicsDrawStringExEx($hGraphic, $Orbit[8], $pixel[0] - 60, $pixel[1] - 20, 400, 100, $hRedBrush)
 EndFunc   ;==>drawOrbit
 
 
 
-Func projectToCanvasCoords($cartesian, $perspectiveTransform)
-	Dim $pixel[2]
-	$cartesian[0] /= $kmPerPixel
-	$cartesian[1] /= $kmPerPixel
-	$cartesian[2] /= $kmPerPixel
-	$pixel[0] = Floor($perspectiveTransform[0] * $cartesian[0] + $perspectiveTransform[1] * $cartesian[1] + $perspectiveTransform[2] * $cartesian[2] + $perspectiveTransform[3])
-	$pixel[1] = Floor($perspectiveTransform[4] * $cartesian[0] + $perspectiveTransform[5] * $cartesian[1] + $perspectiveTransform[6] * $cartesian[2] + $perspectiveTransform[7])
-
+Func projectToCanvasCoords($cartesian, $perspective)
+	Dim $pixel[2] = [Floor($perspective[0] * $cartesian[0] + $perspective[1] * $cartesian[1] + $perspective[2] * $cartesian[2] + $perspective[3]), _
+			Floor($perspective[4] * $cartesian[0] + $perspective[5] * $cartesian[1] + $perspective[6] * $cartesian[2] + $perspective[7])]
 	Return $pixel
 EndFunc   ;==>projectToCanvasCoords
 
