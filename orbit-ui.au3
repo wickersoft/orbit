@@ -10,24 +10,12 @@
 #include "orbit.au3"
 
 Global Const $SMART_AP_IP = "192.168.178.236"
+$resolution = 900
+$kmPerPixel = 2e9 / $resolution
 
 _GDIPlus_Startup()
 _fbhttp_set_credentials("http", "dennis:dennis", $SMART_AP_IP & ":50443", "1.0.0")
 
-$resolution = 900
-$kmPerPixel = 2e9 / $resolution
-
-
-
-;Dim $LABEL_FRAME[8] = [-1, 0, 0, 0.8 * $resolution, 0, -0.7, 0.7, 0.4 * $resolution]
-;Dim $LABEL_FRAME[8] = [-1, 0, 0, 0.8 * $resolution, 0, 0, 1, 0.4 * $resolution]
-
-#Region ### START Koda GUI section ### Form=
-$Form1 = GUICreate("Form1", $resolution, 0.8 * $resolution, 192, 50)
-GUISetState(@SW_SHOW)
-#EndRegion ### END Koda GUI section ###
-
-$hGraphicGui = _GDIPlus_GraphicsCreateFromHWND($Form1)
 $hBitmap = _WinAPI_CreateBitmap($resolution, 0.8 * $resolution, 1, 32)
 $himage = _GDIPlus_BitmapCreateFromHBITMAP($hBitmap)
 $hGraphic = _GDIPlus_ImageGetGraphicsContext($himage)
@@ -40,9 +28,27 @@ $hPenBlack = _GDIPlus_PenCreate(0xFF000000, 3)
 $hPenDGray = _GDIPlus_PenCreate(0xFF808080, 1)
 $hPenLGray = _GDIPlus_PenCreate(0xFFE0E0E0, 1)
 
-$i = -3.141 / 7
+;Dim $LABEL_FRAME[8] = [-1, 0, 0, 0.8 * $resolution, 0, -0.7, 0.7, 0.4 * $resolution]
+;Dim $LABEL_FRAME[8] = [-1, 0, 0, 0.8 * $resolution, 0, 0, 1, 0.4 * $resolution]
 
+$ORBIT_TSUCHINSHAN =    _Orbit_FromMPCElements("    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8")
+$ORBIT_SWIFT_TUTTLE =   _Orbit_FromMPCElements("0109P         1992 12 19.8047  0.979463  0.962634  153.2308  139.5093  113.3770  20240629   4.0  6.0  109P/Swift-Tuttle                                        105,  420")
+$ORBIT_BIELA =          _Orbit_FromMPCElements("0003D         2025 06 26.2215  0.823006  0.767472  192.2857  276.1865    7.8876  20240629  11.0  6.0  3D/Biela                                                  76, 1135")
+$ORBIT_EARTH =          _Orbit_FromMPCElements("0109P         2024 03 21.0000  1.000000  0.000000  180.0000    0.0000    0.0000  20240629   4.0  6.0  Earth                                                    105,  420")
+
+
+;_ArrayDisplay($ORBIT_TSUCHINSHAN)
+
+#Region ### START Koda GUI section ### Form=
+$Form1 = GUICreate("Form1", $resolution, 0.8 * $resolution, 192, 50)
+GUISetState(@SW_SHOW)
+#EndRegion ### END Koda GUI section ###
+
+
+$hGraphicGui = _GDIPlus_GraphicsCreateFromHWND($Form1)
+$i = -3.141 / 7
 $simOffsetSeconds = -8640000.0
+
 While 1
 	$nMsg = GUIGetMsg()
 	Switch $nMsg
@@ -66,6 +72,7 @@ _GDIPlus_BrushDispose($hWhiteBrush)
 _GDIPlus_BrushDispose($hBlackBrush)
 _GDIPlus_BrushDispose($hRedBrush)
 
+
 Func render($iwidth, $iheight, $simOffsetSeconds)
 	$time = TimerInit()
 
@@ -75,18 +82,15 @@ Func render($iwidth, $iheight, $simOffsetSeconds)
 	ConsoleWrite("Base: " & TimerDiff($time) & "ms" & @CRLF)
 
 	$time = TimerInit()
-	$orbElms = "0003D         2025 06 26.2215  0.823006  0.767472  192.2857  276.1865    7.8876  20240629  11.0  6.0  3D/Biela                                                  76, 1135"
-	drawOrbit($iwidth, $iheight, $orbElms, $simOffsetSeconds)
+	drawOrbit($iwidth, $iheight, $ORBIT_BIELA, $simOffsetSeconds)
 	ConsoleWrite("Biela: " & TimerDiff($time) & "ms" & @CRLF)
 
 	$time = TimerInit()
-	$orbElms = "0109P         1992 12 19.8047  0.979463  0.962634  153.2308  139.5093  113.3770  20240629   4.0  6.0  109P/Swift-Tuttle                                        105,  420"
-	;drawOrbit($iwidth, $iheight, $orbElms)
+	;drawOrbit($iwidth, $iheight, $ORBIT_SWIFT_TUTTLE)
 	;ConsoleWrite("Tuttle: " & TimerDiff($time) & "ms" & @CRLF)
 
 	$time = TimerInit()
-	$orbElms = "0109P         2024 03 21.0000  1.000000  0.000000  180.0000    0.0000    0.0000  20240629   4.0  6.0  Earth                                                    105,  420"
-	drawOrbit($iwidth, $iheight, $orbElms, $simOffsetSeconds)
+	drawOrbit($iwidth, $iheight, $ORBIT_EARTH, $simOffsetSeconds)
 	ConsoleWrite("Earth: " & TimerDiff($time) & "ms" & @CRLF)
 
 	_GDIPlus_GraphicsDrawImage($hGraphicGui, $himage, 0, 0)
@@ -113,45 +117,32 @@ Func drawBase($iwidth, $iheight)
 	_GDIPlus_GraphicsFillEllipse($hGraphic, $pixel[0] - 2, $pixel[1] - 2, 4, 4, $hBlackBrush)
 EndFunc   ;==>drawBase
 
-Func drawOrbit($iwidth, $iheight, $orbElms, $simOffsetSeconds)
+Func drawOrbit($iwidth, $iheight, $Orbit, $simOffsetSeconds)
 	Dim $NEAR_TIME_STEPS[25] = [0, 1, 2, 3, 4, 5, 6, 7, 14, 21, 28, 56, 84, 112, 140, 168, 196, 224, 252, 280, 308, 336, 364, 730, 1095]
-	$eccentricity = getEccentricity($orbElms)
-	$periapsisDistAU = getPeriapsisDist($orbElms)
-	$argOfPerihelion = getArgOfPerihelion($orbElms)
-	$longOfAscNode = getLongOfAscNode($orbElms)
-	$inclination = getInclination($orbElms)
-	$objectName = getObjectName($orbElms)
-	$specAngMom = calcSpecificAngMomentum($eccentricity, $periapsisDistAU)
-	$periapsisTime = getPeriapsisTime($orbElms)
-	$timeToPeriapsis = _DateDiff("s", $periapsisTime, _DateAdd("s", $simOffsetSeconds, _NowCalcDate()))
 
 	;msgbox(0, "", $periapsisTime & @CRLF & _NowCalcDate() & @CRLF & $timeToPeriapsis)
 
 	For $time = 0 To 24
-		$polar = getPolarCoordsForTime($eccentricity, $periapsisDistAU, $timeToPeriapsis + $NEAR_TIME_STEPS[$time] * 86400)
-		$cartesian = calcCartesianCoords($polar[1], $polar[0], $argOfPerihelion, $inclination, $longOfAscNode)
-		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+		$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds - $NEAR_TIME_STEPS[$time] * 86400)
+        $pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		$cartesian[1] = 0
 		$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
-		$polar = getPolarCoordsForTime($eccentricity, $periapsisDistAU, $timeToPeriapsis - $NEAR_TIME_STEPS[$time] * 86400)
-		$cartesian = calcCartesianCoords($polar[1], $polar[0], $argOfPerihelion, $inclination, $longOfAscNode)
+		
+		$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds + $NEAR_TIME_STEPS[$time] * 86400)
 		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		$cartesian[1] = 0
 		$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
 	Next
 
-	$asymptoticTrueAnomaly = calcAsymptoticTrueAnomaly($eccentricity)
-	$radius = calcOrbitRadiusKm(-$asymptoticTrueAnomaly, $specAngMom, $eccentricity)
-	$cartesian = calcCartesianCoords(-$asymptoticTrueAnomaly, $radius, $argOfPerihelion, $inclination, $longOfAscNode)
+	$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, -$Orbit[11])
 	$pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 	$cartesian[1] = 0
 	$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
-	For $trueAnomaly = -$asymptoticTrueAnomaly To $asymptoticTrueAnomaly * 1.01 Step 0.05
-		$radius = calcOrbitRadiusKm($trueAnomaly, $specAngMom, $eccentricity)
-		$cartesian = calcCartesianCoords($trueAnomaly, $radius, $argOfPerihelion, $inclination, $longOfAscNode)
-		$pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+	For $trueAnomaly = -$Orbit[11] To $Orbit[11] * 1.01 Step 0.01
+		$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
+        $pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		$cartesian[1] = 0
 		$pixel_flat_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenRed)
@@ -161,11 +152,10 @@ Func drawOrbit($iwidth, $iheight, $orbElms, $simOffsetSeconds)
 		$pixel = $pixel_new
 	Next
 
-	$polar = getPolarCoordsForTime($eccentricity, $periapsisDistAU, $timeToPeriapsis)
-	$cartesian = calcCartesianCoords($polar[1], $polar[0], $argOfPerihelion, $inclination, $longOfAscNode)
-	$pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
+    $cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds)	
+    $pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 	_GDIPlus_GraphicsFillEllipse($hGraphic, $pixel[0] - 3, $pixel[1] - 3, 6, 6, $hRedBrush)
-	_GDIPlus_GraphicsDrawStringExEx($hGraphic, $objectName, $pixel[0] - 60, $pixel[1] - 20, 400, 100, $hRedBrush)
+	_GDIPlus_GraphicsDrawStringExEx($hGraphic, $Orbit[8], $pixel[0] - 60, $pixel[1] - 20, 400, 100, $hRedBrush)
 EndFunc   ;==>drawOrbit
 
 Func getCanvasCoordinates()
