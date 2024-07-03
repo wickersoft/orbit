@@ -10,13 +10,14 @@
 #include "orbit.au3"
 
 Global Const $SMART_AP_IP = "192.168.178.236"
-$resolution = 1600
-$kmPerPixel = 5e8 / $resolution
+$width = 600
+$height = 400
+$kmPerPixel = 1e6
 
 _GDIPlus_Startup()
 _fbhttp_set_credentials("http", "dennis:dennis", $SMART_AP_IP & ":50443", "1.0.0")
 
-$hBitmap = _WinAPI_CreateBitmap($resolution, 0.8 * $resolution, 1, 32)
+$hBitmap = _WinAPI_CreateBitmap($width, $height, 1, 32)
 $himage = _GDIPlus_BitmapCreateFromHBITMAP($hBitmap)
 $hGraphic = _GDIPlus_ImageGetGraphicsContext($himage)
 $hWhiteBrush = _GDIPlus_BrushCreateSolid(0xFFFFFFFF)
@@ -40,7 +41,7 @@ $ORBIT_EARTH =          _Orbit_FromMPCElements("0109P         2024 03 21.0000  1
 ;_ArrayDisplay($ORBIT_TSUCHINSHAN)
 
 #Region ### START Koda GUI section ### Form=
-$Form1 = GUICreate("Form1", $resolution, 0.8 * $resolution, 192, 50)
+$Form1 = GUICreate("Form1", $width, $height, 192, 50)
 GUISetState(@SW_SHOW)
 #EndRegion ### END Koda GUI section ###
 
@@ -64,8 +65,8 @@ $viewAz = -1/7 * 3.1415926535
 $viewAlt = 7/18 * 3.1415926535
 $simOffsetSeconds = 0
 
-Dim $LABEL_FRAME[8] = [-Cos($viewAz) / $kmPerPixel, 0 / $kmPerPixel, -Sin($viewAz) / $kmPerPixel, 0.5 * $resolution, _
-	 -Cos($viewAlt) * Sin($viewAz) / $kmPerPixel, -Sin($viewAlt) / $kmPerPixel, Cos($viewAlt) * Cos($viewAz) / $kmPerPixel, 0.4 * $resolution]
+Dim $LABEL_FRAME[8] = [-Cos($viewAz) / $kmPerPixel, 0 / $kmPerPixel, -Sin($viewAz) / $kmPerPixel, $width / 2, _
+	 -Cos($viewAlt) * Sin($viewAz) / $kmPerPixel, -Sin($viewAlt) / $kmPerPixel, Cos($viewAlt) * Cos($viewAz) / $kmPerPixel, $height / 2]
 render($simOffsetSeconds, $LABEL_FRAME)
     
 While 1
@@ -77,12 +78,10 @@ While 1
 	EndSwitch
 
 
-	;Dim $LABEL_FRAME[8] = [-Cos($i) / $kmPerPixel, 0 / $kmPerPixel, -Sin($i) / $kmPerPixel, 0.5 * $resolution, _
-	;		 -0.7 * Sin($i) / $kmPerPixel, -0.7 / $kmPerPixel, 0.7 * Cos($i) / $kmPerPixel, 0.4 * $resolution]
-	Dim $LABEL_FRAME[8] = [-Cos($viewAz) / $kmPerPixel, 0 / $kmPerPixel, -Sin($viewAz) / $kmPerPixel, 0.5 * $resolution, _
-	 -Cos($viewAlt) * Sin($viewAz) / $kmPerPixel, -Sin($viewAlt) / $kmPerPixel, Cos($viewAlt) * Cos($viewAz) / $kmPerPixel, 0.4 * $resolution]
-    render($simOffsetSeconds, $LABEL_FRAME)
-	$viewAz += 0.01
+	;Dim $LABEL_FRAME[8] = [-Cos($viewAz) / $kmPerPixel, 0 / $kmPerPixel, -Sin($viewAz) / $kmPerPixel, 0.5 * $resolution, _
+	; -Cos($viewAlt) * Sin($viewAz) / $kmPerPixel, -Sin($viewAlt) / $kmPerPixel, Cos($viewAlt) * Cos($viewAz) / $kmPerPixel, 0.4 * $resolution]
+    ;render($simOffsetSeconds, $LABEL_FRAME)
+	;$viewAz += 0.01
     ;$simOffsetSeconds += 100000
 WEnd
 
