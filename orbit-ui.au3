@@ -45,13 +45,7 @@ GUISetState(@SW_SHOW)
 #EndRegion ### END Koda GUI section ###
 
 
-$hGraphicGui = _GDIPlus_GraphicsCreateFromHWND($Form1)
-$i = -3.141 / 7
-$simOffsetSeconds = -8640000.0
-
 $_NOW_DATE = _NowCalcDate()
-
-
 For $i = -200 To 200
     $d = _DateAdd("d", $i, $_NOW_DATE)
     $polarC = _Orbit_CalcPolarCoordsAtDate($ORBIT_TSUCHINSHAN, $d)
@@ -65,8 +59,9 @@ For $i = -200 To 200
     
 Next
 
-
-$simOffsetSeconds = _Orbit_calcRefTimeAtDate("2024/10/31")
+$hGraphicGui = _GDIPlus_GraphicsCreateFromHWND($Form1)
+$i = -3.141 / 7
+$simOffsetSeconds = -8640000.0
 While 1
 	$nMsg = GUIGetMsg()
 	Switch $nMsg
@@ -97,23 +92,13 @@ Func render($iwidth, $iheight, $simOffsetSeconds)
 	_GDIPlus_GraphicsClear($hGraphic, 0xFFFFFFFF)
 
 	drawBase($iwidth, $iheight)
-	ConsoleWrite("Base: " & TimerDiff($time) & "ms" & @CRLF)
-
-	$time = TimerInit()
-	drawOrbit($iwidth, $iheight, $ORBIT_BIELA, $simOffsetSeconds)
-	ConsoleWrite("Biela: " & TimerDiff($time) & "ms" & @CRLF)
-
-	$time = TimerInit()
+	
+    drawOrbit($iwidth, $iheight, $ORBIT_BIELA, $simOffsetSeconds)
 	drawOrbit($iwidth, $iheight, $ORBIT_SWIFT_TUTTLE, $simOffsetSeconds)
-	ConsoleWrite("Swift-Tuttle: " & TimerDiff($time) & "ms" & @CRLF)
-
-	$time = TimerInit()
 	drawOrbit($iwidth, $iheight, $ORBIT_TSUCHINSHAN, $simOffsetSeconds)
-	ConsoleWrite("Tsuchinshan: " & TimerDiff($time) & "ms" & @CRLF)
-
-	$time = TimerInit()
 	drawOrbit($iwidth, $iheight, $ORBIT_EARTH, $simOffsetSeconds)
-	ConsoleWrite("Earth: " & TimerDiff($time) & "ms" & @CRLF)
+
+    ConsoleWrite("Frame: " & TimerDiff($time) & "ms" & @CRLF)
 
 	_GDIPlus_GraphicsDrawImage($hGraphicGui, $himage, 0, 0)
 EndFunc   ;==>render
@@ -177,8 +162,7 @@ Func drawOrbit($iwidth, $iheight, $Orbit, $simOffsetSeconds)
 	_GDIPlus_GraphicsDrawStringExEx($hGraphic, $Orbit[8], $pixel[0] - 60, $pixel[1] - 20, 400, 100, $hRedBrush)
 EndFunc   ;==>drawOrbit
 
-Func getCanvasCoordinates()
-EndFunc   ;==>getCanvasCoordinates
+
 
 Func projectToCanvasCoords($cartesian, $perspectiveTransform)
 	Dim $pixel[2]
