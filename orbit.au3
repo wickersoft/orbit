@@ -13,8 +13,8 @@ Func _Orbit_FromMPCElements($MPCElements)
 	$Orbit[3] = Number(StringMid($MPCElements, 52, 9)) * 3.14159265359 / 180            ; Argument of Periapsis (radians)
 	$Orbit[4] = Number(StringMid($MPCElements, 62, 9)) * 3.14159265359 / 180            ; Longitude of ascending node (radians)
 	$Orbit[5] = Number(StringMid($MPCElements, 72, 9)) * 3.14159265359 / 180            ; Inclination (radians)
-	$Orbit[6] = ""                                                                      ; Absolute magnitude
-	$Orbit[7] = ""                                                                      ; Slope parameter
+	$Orbit[6] = Number(StringMid($MPCElements, 92, 4))                                  ; Absolute magnitude
+	$Orbit[7] = Number(StringMid($MPCElements, 97, 4))                                  ; Slope parameter
 	$Orbit[8] = StringMid($MPCElements, 103, 56)                                        ; Designation
 
 	; Calculated for convenience and speed
@@ -82,7 +82,6 @@ SPEED                                                                           
 
 
 Func _Orbit_CalcRefTimeAtDate($time = _NowCalcDate())
-    ConsoleWrite("RefTime: " & $_ORBIT_REFERENCE_DATE & " " & $time & " " & _DateDiff("s", $_ORBIT_REFERENCE_DATE, $time) & @CRLF)
     Return _DateDiff("s", $_ORBIT_REFERENCE_DATE, $time)
 EndFunc
 
@@ -211,6 +210,16 @@ Func _Orbit_CalcHyperbolicTrueAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 	;If $nu < 0 Then $nu += 3.14159265359
 	Return $nu
 EndFunc   ;==>_Orbit_CalcHyperbolicTrueAnomaly
+
+Func _Orbit_CalcApparentMagnitude(ByRef $Orbit, $sunDistanceKm, $earthDistanceKm)
+    ;ConsoleWrite($sunDistanceKm & "  " & $earthDistanceKm & @CRLF)
+    
+    Return $Orbit[6] + 5 * Log10($earthDistanceKm / 1.5e8) + 2.5 * $Orbit[7] * Log10($sunDistanceKm / 1.5e8)
+EndFunc
+
+Func Log10($fNb)
+    Return Log($fNb) / Log(10) ; 10 is the base
+EndFunc   ;==>Log10
 
 Func sinh($x)
 	$E = 2.7182818284590452353602
