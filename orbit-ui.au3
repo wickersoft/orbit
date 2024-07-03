@@ -10,8 +10,8 @@
 #include "orbit.au3"
 
 Global Const $SMART_AP_IP = "192.168.178.236"
-$resolution = 900
-$kmPerPixel = 2e9 / $resolution
+$resolution = 1600
+$kmPerPixel = 5e8 / $resolution
 
 _GDIPlus_Startup()
 _fbhttp_set_credentials("http", "dennis:dennis", $SMART_AP_IP & ":50443", "1.0.0")
