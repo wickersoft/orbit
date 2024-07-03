@@ -87,8 +87,8 @@ Func calcCartesianCoords($trueAnomaly, $distance, $argOfPeriapsis, $inclination,
 	$cartesian[2] = Cos($inclination) * $cartesian[2]
 
 	; Apply longitude of ascending node
-	$x = Cos($argOfPeriapsis) * $cartesian[0] - Sin($argOfPeriapsis) * $cartesian[2]
-	$z = Cos($argOfPeriapsis) * $cartesian[2] + Sin($argOfPeriapsis) * $cartesian[0]
+	$x = Cos($longOfAscNode) * $cartesian[0] - Sin($longOfAscNode) * $cartesian[2]
+	$z = Cos($longOfAscNode) * $cartesian[2] + Sin($longOfAscNode) * $cartesian[0]
 
 	$cartesian[0] = $x
 	$cartesian[2] = $z
