@@ -140,14 +140,13 @@ Func drawOrbit($iwidth, $iheight, $Orbit, $simOffsetSeconds)
 	$pixel = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 	$cartesian[1] = 0
 	$pixel_flat = projectToCanvasCoords($cartesian, $LABEL_FRAME)
-	For $trueAnomaly = -$Orbit[11] To $Orbit[11] * 1.01 Step 0.01
+	For $trueAnomaly = -$Orbit[11] To $Orbit[11] * 1.01 Step 0.04
 		$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
         $pixel_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		$cartesian[1] = 0
 		$pixel_flat_new = projectToCanvasCoords($cartesian, $LABEL_FRAME)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenRed)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_flat[0], $pixel_flat[1], $pixel_flat_new[0], $pixel_flat_new[1], $hPenLGray)
-		;ConsoleWrite($pixel_new[0] & "  " & $pixel_new[1] & "  " & $trueAnomaly & "  " & cos($trueAnomaly) &  @CRLF)
 		$pixel_flat = $pixel_flat_new
 		$pixel = $pixel_new
 	Next
