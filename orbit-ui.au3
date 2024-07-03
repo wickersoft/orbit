@@ -49,6 +49,24 @@ $hGraphicGui = _GDIPlus_GraphicsCreateFromHWND($Form1)
 $i = -3.141 / 7
 $simOffsetSeconds = -8640000.0
 
+$_NOW_DATE = _NowCalcDate()
+
+
+For $i = -200 To 200
+    $d = _DateAdd("d", $i, $_NOW_DATE)
+    $polarC = _Orbit_CalcPolarCoordsAtDate($ORBIT_TSUCHINSHAN, $d)
+    
+    $cartesianC = _Orbit_CalcCartesianCoordsAtDate($ORBIT_TSUCHINSHAN, $d)
+    $cartesianE = _Orbit_CalcCartesianCoordsAtDate($ORBIT_EARTH, $d)
+
+    $earthDist = sqrt(($cartesianE[0] - $cartesianC[0])^2 + ($cartesianE[1] - $cartesianC[1])^2 + ($cartesianE[2] - $cartesianC[2])^2)
+    
+    ConsoleWrite($d & ";" & stringreplace(_Orbit_CalcApparentMagnitude($ORBIT_TSUCHINSHAN, $polarC[0], $earthDist), ".", ",") & ";" & ($earthDist / 1.5e8) & @CRLF)
+    
+Next
+
+
+$simOffsetSeconds = _Orbit_calcRefTimeAtDate("2024/10/31")
 While 1
 	$nMsg = GUIGetMsg()
 	Switch $nMsg
