@@ -5,7 +5,6 @@
 #include <Misc.au3>
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
-#include <..\Wickersoft_HTTP.au3>
 #include "orbit.au3"
 
 Global $_ORBITRENDERER_HBITMAP, $_ORBITRENDERER_HIMAGE, $_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_HWHITEBRUSH, $_ORBITRENDERER_HBLACKBRUSH, $_ORBITRENDERER_HREDBRUSH, $_ORBITRENDERER_HYELLOWBRUSH, $_ORBITRENDERER_HPENRED, $_ORBITRENDERER_HPENPALERED, $_ORBITRENDERER_HPENBLACK, $_ORBITRENDERER_HPENDGRAY, $_ORBITRENDERER_HPENLGRAY, $_ORBITRENDERER_IWIDTH, $_ORBITRENDERER_IHEIGHT
@@ -36,6 +35,12 @@ Func _OrbitRenderer_Shutdown()
 	_GDIPlus_BrushDispose($_ORBITRENDERER_HWHITEBRUSH)
 	_GDIPlus_BrushDispose($_ORBITRENDERER_HBLACKBRUSH)
 	_GDIPlus_BrushDispose($_ORBITRENDERER_HREDBRUSH)
+	_GDIPlus_BrushDispose($_ORBITRENDERER_HYELLOWBRUSH)
+    _GDIPlus_PenDispose($_ORBITRENDERER_HPENRED)
+    _GDIPlus_PenDispose($_ORBITRENDERER_HPENPALERED)
+    _GDIPlus_PenDispose($_ORBITRENDERER_HPENBLACK)
+    _GDIPlus_PenDispose($_ORBITRENDERER_HPENDGRAY)
+    _GDIPlus_PenDispose($_ORBITRENDERER_HPENLGRAY)
 EndFunc   ;==>_OrbitRenderer_Shutdown
 
 Func _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $sun_x, $sun_y, $kmPerPixel)
@@ -43,7 +48,6 @@ Func _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $sun_x, $s
 			 -Cos($viewAlt) * Sin($viewAz) / $kmPerPixel, -Sin($viewAlt) / $kmPerPixel, Cos($viewAlt) * Cos($viewAz) / $kmPerPixel, $sun_y]
 	Return $perspective
 EndFunc   ;==>_OrbitRenderer_GenerateAltAzPerspectiveMatrix
-
 
 Func _OrbitRenderer_RenderLightCurve(ByRef $orbit, ByRef $observations, $startDay, $endDay, $brightestMag, $darkestMag)
 	_GDIPlus_GraphicsClear($_ORBITRENDERER_HGRAPHIC, 0xFFFFFFFF)
