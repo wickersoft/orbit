@@ -49,21 +49,6 @@ $Form1 = GUICreate("Form1", $width, $height, 192, 50)
 GUISetState(@SW_SHOW)
 #EndRegion ### END Koda GUI section ###
 
-
-$_NOW_DATE = _NowCalcDate()
-For $i = -200 To 200
-    $d = _DateAdd("d", $i, $_NOW_DATE)
-    $polarC = _Orbit_CalcPolarCoordsAtDate($ORBIT_TSUCHINSHAN, $d)
-    
-    $cartesianC = _Orbit_CalcCartesianCoordsAtDate($ORBIT_TSUCHINSHAN, $d)
-    $cartesianE = _Orbit_CalcCartesianCoordsAtDate($ORBIT_EARTH, $d)
-
-    $earthDist = sqrt(($cartesianE[0] - $cartesianC[0])^2 + ($cartesianE[1] - $cartesianC[1])^2 + ($cartesianE[2] - $cartesianC[2])^2)
-    
-    ConsoleWrite($d & ";" & stringreplace(_Orbit_CalcApparentMagnitude($ORBIT_TSUCHINSHAN, $polarC[0], $earthDist), ".", ",") & ";" & ($earthDist / 1.5e8) & @CRLF)
-    
-Next
-
 $hGraphicGui = _GDIPlus_GraphicsCreateFromHWND($Form1)
 $viewAz = -1 / 7 * 3.1415926535
 $viewAlt = 7 / 18 * 3.1415926535
