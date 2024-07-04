@@ -1,3 +1,4 @@
+#include-once
 #include <Date.au3>
 
 $SUN_MU = 1.32712e11
