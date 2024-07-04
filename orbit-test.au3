@@ -2,11 +2,11 @@
 #include <GDIPlus.au3>
 #include <Memory.au3>
 #include <Misc.au3>
-#include <Wickersoft_HTTP.au3>
-#include <Wickersoft_FBAPI.au3>
+#include <..\Wickersoft_HTTP.au3>
+#include <..\Wickersoft_FBAPI.au3>
 
-#include <Orbit\Orbit.au3>
-#include <Orbit\OrbitRenderer.au3>
+#include <Orbit.au3>
+#include <OrbitRenderer.au3>
 
 Global Const $SMART_AP_IP = "192.168.178.236"
 
