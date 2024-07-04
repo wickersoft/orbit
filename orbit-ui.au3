@@ -33,7 +33,7 @@ $viewAlt = 7 / 18 * 3.1415926535
 $simOffsetSeconds = 0
 
 $LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $width / 2, $height / 2, $kmPerPixel)
-$hImage = _OrbitRenderer_Render($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
+$hImage = _OrbitRenderer_RenderOrbits($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
 
 While 1
 	$nMsg = GUIGetMsg()
@@ -45,7 +45,7 @@ While 1
 
 
 	$LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $width / 2, $height / 2, $kmPerPixel)
-    $hImage = _OrbitRenderer_Render($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
+    $hImage = _OrbitRenderer_RenderOrbits($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
     _GDIPlus_GraphicsDrawImage($hGraphicGui, $hImage, 0, 0)
     
     ;$viewAz += 0.01
