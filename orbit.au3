@@ -51,7 +51,7 @@ Func _Orbit_CalcMeanMotion(ByRef $Orbit)
 	ElseIf $Orbit[2] < 1 Then
 		Return _Orbit_CalcEllipticalMeanMotion($Orbit)
 	Else
-		Return _Orbit_CalcParabolicMeanMotion($Orbit[9])
+		Return _Orbit_CalcParabolicMeanMotion($Orbit)
 	EndIf
 EndFunc   ;==>_Orbit_CalcMeanMotion
 
