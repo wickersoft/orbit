@@ -34,7 +34,8 @@ EndFunc   ;==>_Orbit_FromMPCElements
 Func getPeriapsisTime($MPCElements)
 	$year = StringMid($MPCElements, 15, 4)
 	$month = StringMid($MPCElements, 20, 2)
-	$day = StringMid($MPCElements, 23, 2)
+	$day = number(StringMid($MPCElements, 23, 2))
+    If $day < 10 then $day = "0" & $day
 	Return $year & "/" & $month & "/" & $day
 EndFunc   ;==>getPeriapsisTime
 
@@ -83,7 +84,9 @@ SPEED                                                                           
 
 
 Func _Orbit_CalcRefTimeAtDate($time = _NowCalcDate())
-    Return _DateDiff("s", $_ORBIT_REFERENCE_DATE, $time)
+    $refTime = _DateDiff("s", $_ORBIT_REFERENCE_DATE, $time)
+    If $refTime = 0 Then $refTime = -_DateDiff("s", $time, $_ORBIT_REFERENCE_DATE)
+    Return $refTime
 EndFunc
 
 Func _Orbit_CalcSecondsSincePeriapsisAtRefTime(ByRef $Orbit, $refTime)
