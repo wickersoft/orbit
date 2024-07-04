@@ -208,13 +208,10 @@ EndFunc   ;==>_Orbit_CalcHypEccentricAnomaly
 Func _Orbit_CalcHyperbolicTrueAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 	$hypEccAnomaly = _Orbit_CalcHypEccentricAnomaly($Orbit, $SecondsSincePeriapsis)
 	$nu = (2 * ATan(Sqrt(($Orbit[2] + 1) / ($Orbit[2] - 1)) * tanh($hypEccAnomaly / 2)))
-	;If $nu < 0 Then $nu += 3.14159265359
 	Return $nu
 EndFunc   ;==>_Orbit_CalcHyperbolicTrueAnomaly
 
 Func _Orbit_CalcApparentMagnitude(ByRef $Orbit, $sunDistanceKm, $earthDistanceKm)
-    ;ConsoleWrite($sunDistanceKm & "  " & $earthDistanceKm & @CRLF)
-    
     Return $Orbit[6] + 5 * Log10($earthDistanceKm / 1.5e8) + 2.5 * $Orbit[7] * Log10($sunDistanceKm / 1.5e8)
 EndFunc
 
