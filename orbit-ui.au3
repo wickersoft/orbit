@@ -33,10 +33,13 @@ $hPenLGray = _GDIPlus_PenCreate(0xFFE0E0E0, 1)
 ;Dim $LABEL_FRAME[8] = [-1, 0, 0, 0.8 * $resolution, 0, -0.7, 0.7, 0.4 * $resolution]
 ;Dim $LABEL_FRAME[8] = [-1, 0, 0, 0.8 * $resolution, 0, 0, 1, 0.4 * $resolution]
 
-$ORBIT_TSUCHINSHAN =    _Orbit_FromMPCElements("    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8")
-$ORBIT_SWIFT_TUTTLE =   _Orbit_FromMPCElements("0109P         1992 12 19.8047  0.979463  0.962634  153.2308  139.5093  113.3770  20240629   4.0  6.0  109P/Swift-Tuttle                                        105,  420")
-$ORBIT_BIELA =          _Orbit_FromMPCElements("0003D         2025 06 26.2215  0.823006  0.767472  192.2857  276.1865    7.8876  20240629  11.0  6.0  3D/Biela                                                  76, 1135")
-$ORBIT_EARTH =          _Orbit_FromMPCElements("0109P         2024 03 21.0000  1.000000  0.000000  180.0000    0.0000    0.0000  20240629   4.0  6.0  Earth                                                    105,  420")
+$ORBIT_TSUCHINSHAN = _Orbit_FromMPCElements("    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8")
+$ORBIT_ATLAS = _Orbit_FromMPCElements("    CK24G030  2025 01 13.4265  0.093502  1.000012  108.1232  220.3292  116.8529  20240703   9.0  4.0  C/2024 G3 (ATLAS)                                        MPEC 2024-MB8")
+$ORBIT_WIERZSCHOS = _Orbit_FromMPCElements("    CK24E010  2026 01 20.7399  0.565276  1.000019  243.6550  108.1078   75.2342  20240703   7.0  4.0  C/2024 E1 (Wierzchos)                                    MPEC 2024-M41")
+$ORBIT_MACHHOLZ = _Orbit_FromMPCElements("0141P      b  2026 04 15.2237  0.807348  0.735812  241.7800  153.6144   13.9864  20240703   9.0  4.0  141P-B/Machholz                                          MPC 24216")
+$ORBIT_SWIFT_TUTTLE = _Orbit_FromMPCElements("0109P         1992 12 19.8047  0.979463  0.962634  153.2308  139.5093  113.3770  20240629   4.0  6.0  109P/Swift-Tuttle                                        105,  420")
+$ORBIT_BIELA = _Orbit_FromMPCElements("0003D         2025 06 26.2215  0.823006  0.767472  192.2857  276.1865    7.8876  20240629  11.0  6.0  3D/Biela                                                  76, 1135")
+$ORBIT_EARTH = _Orbit_FromMPCElements("0109P         2024 03 21.0000  1.000000  0.000000  180.0000    0.0000    0.0000  20240629   4.0  6.0  Earth                                                    105,  420")
 
 
 ;_ArrayDisplay($ORBIT_TSUCHINSHAN)
@@ -104,7 +107,11 @@ Func render($simOffsetSeconds, ByRef $perspective)
 	;drawOrbit($ORBIT_BIELA, $simOffsetSeconds, $perspective)
 	;drawOrbit($ORBIT_SWIFT_TUTTLE, $simOffsetSeconds, $perspective)
 	drawOrbit($ORBIT_TSUCHINSHAN, $simOffsetSeconds, $perspective)
+	drawOrbit($ORBIT_WIERZSCHOS, $simOffsetSeconds, $perspective)
+	drawOrbit($ORBIT_MACHHOLZ, $simOffsetSeconds, $perspective)
 	drawOrbit($ORBIT_EARTH, $simOffsetSeconds, $perspective)
+	drawOrbit($ORBIT_ATLAS, $simOffsetSeconds, $perspective)
+
 
 	ConsoleWrite("Frame: " & TimerDiff($time) & "ms" & @CRLF)
 
