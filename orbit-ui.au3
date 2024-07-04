@@ -24,7 +24,8 @@ $hWhiteBrush = _GDIPlus_BrushCreateSolid(0xFFFFFFFF)
 $hBlackBrush = _GDIPlus_BrushCreateSolid(0xFF000000)
 $hRedBrush = _GDIPlus_BrushCreateSolid(0xFFFF0000)
 $hYellowBrush = _GDIPlus_BrushCreateSolid(0xFFFFFF00)
-$hPenRed = _GDIPlus_PenCreate(0xFFFF9090, 3)
+$hPenRed = _GDIPlus_PenCreate(0xFFFF0000, 3)
+$hPenPaleRed = _GDIPlus_PenCreate(0xFFFFD0D0, 3)
 $hPenBlack = _GDIPlus_PenCreate(0xFF000000, 3)
 $hPenDGray = _GDIPlus_PenCreate(0xFF808080, 1)
 $hPenLGray = _GDIPlus_PenCreate(0xFFE0E0E0, 1)
@@ -132,24 +133,29 @@ Func drawBase($perspective)
 EndFunc   ;==>drawBase
 
 Func drawOrbit($Orbit, $simOffsetSeconds, $perspective)
-    
-    ; Draw out-of-ecliptic "Supporting lines" 
+
+	; Draw out-of-ecliptic "Supporting lines"
 	Dim $NEAR_TIME_STEPS[25] = [0, 1, 2, 3, 4, 5, 6, 7, 14, 21, 28, 56, 84, 112, 140, 168, 196, 224, 252, 280, 308, 336, 364, 730, 1095]
 	For $time = 0 To 24
 		$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds - $NEAR_TIME_STEPS[$time] * 86400)
 		$pixel_new = projectToCanvasCoords($cartesian, $perspective)
-		$cartesian[1] = 0
-		$pixel_flat = projectToCanvasCoords($cartesian, $perspective)
-		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
+
+		If $cartesian[1] > 0 Then
+			$cartesian[1] = 0
+			$pixel_flat = projectToCanvasCoords($cartesian, $perspective)
+			_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
+		EndIf
 
 		$cartesian = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $simOffsetSeconds + $NEAR_TIME_STEPS[$time] * 86400)
 		$pixel_new = projectToCanvasCoords($cartesian, $perspective)
-		$cartesian[1] = 0
-		$pixel_flat = projectToCanvasCoords($cartesian, $perspective)
-		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
+		If $cartesian[1] > 0 Then
+			$cartesian[1] = 0
+			$pixel_flat = projectToCanvasCoords($cartesian, $perspective)
+			_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_new[0], $pixel_new[1], $pixel_flat[0], $pixel_flat[1], $hPenDGray)
+		EndIf
 	Next
 
-    ; Draw Orbit and "supporting" projection into ecliptic
+	; Draw Orbit and "supporting" projection into ecliptic
 	$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, -$Orbit[11])
 	$pixel = projectToCanvasCoords($cartesian, $perspective)
 	$cartesian[1] = 0
@@ -157,9 +163,13 @@ Func drawOrbit($Orbit, $simOffsetSeconds, $perspective)
 	For $trueAnomaly = -$Orbit[11] To $Orbit[11] * 1.01 Step 0.05
 		$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
 		$pixel_new = projectToCanvasCoords($cartesian, $perspective)
+		If $cartesian[1] > 0 Then
+			_GDIPlus_GraphicsDrawLine($hGraphic, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenRed)
+		Else
+			_GDIPlus_GraphicsDrawLine($hGraphic, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenPaleRed)
+		EndIf
 		$cartesian[1] = 0
 		$pixel_flat_new = projectToCanvasCoords($cartesian, $perspective)
-		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenRed)
 		_GDIPlus_GraphicsDrawLine($hGraphic, $pixel_flat[0], $pixel_flat[1], $pixel_flat_new[0], $pixel_flat_new[1], $hPenLGray)
 		$pixel_flat = $pixel_flat_new
 		$pixel = $pixel_new
