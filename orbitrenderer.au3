@@ -129,7 +129,7 @@ Func _OrbitRenderer_RenderOrbits(ByRef $orbitsToRender, $simOffsetSeconds, ByRef
     Next
     _OrbitRenderer_DrawOrbit($ORBIT_EARTH, $simOffsetSeconds, $perspective, $_ORBITRENDERER_HPENBLACK, $_ORBITRENDERER_HPENBLACK)
 
-    _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, _DateAdd("s", $simOffsetSeconds, $_ORBIT_REFERENCE_DATE), $_ORBITRENDERER_IWIDTH - 90, $_ORBITRENDERER_IHEIGHT - 20, 90, 20, $_ORBITRENDERER_HBLACKBRUSH, "Arial", 10)
+    _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, _DateAdd("s", $simOffsetSeconds, $_ORBIT_REFERENCE_DATE), $_ORBITRENDERER_IWIDTH - 90, $_ORBITRENDERER_IHEIGHT - 20, 100, 20, $_ORBITRENDERER_HBLACKBRUSH, "Arial", 10)
 
     Return $_ORBITRENDERER_HIMAGE
 EndFunc   ;==>_OrbitRenderer_RenderOrbits
