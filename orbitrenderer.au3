@@ -110,6 +110,21 @@ Func _OrbitRenderer_RenderLightCurve(ByRef $orbit, ByRef $observations, $startDa
     Return $_ORBITRENDERER_HIMAGE
 EndFunc   ;==>_OrbitRenderer_RenderLightCurve
 
+Func _OrbitRenderer_CalcApparentMagnitudeAtDate($orbit, $date)
+	$refTime = _Orbit_CalcRefTimeAtDate($date)
+	Return _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
+EndFunc   ;==>_OrbitRenderer_CalcApparentMagnitudeAtDate
+
+Func _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
+	$polarC = _Orbit_CalcPolarCoordsAtRefTime($orbit, $refTime)
+	$cartesianC = _Orbit_CalcCartesianCoordsAtPolarCoords($orbit, $polarC)
+	$cartesianE = _Orbit_CalcCartesianCoordsAtRefTime($ORBIT_EARTH, $refTime)
+	$earthDist = Sqrt(($cartesianE[0] - $cartesianC[0]) ^ 2 + ($cartesianE[1] - $cartesianC[1]) ^ 2 + ($cartesianE[2] - $cartesianC[2]) ^ 2)
+
+	$mag = _Orbit_CalcApparentMagnitude($orbit, $polarC[0], $earthDist)
+	Return $mag
+EndFunc
+
 Func _OrbitRenderer_RenderOrbits(ByRef $orbitsToRender, $simOffsetSeconds, ByRef $perspective)
 	_GDIPlus_GraphicsClear($_ORBITRENDERER_HGRAPHIC, 0xFFFFFFFF)
 
@@ -170,17 +185,18 @@ Func _OrbitRenderer_DrawOrbit($Orbit, $simOffsetSeconds, $perspective, $hPenAbov
 	$pixel = _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
 	$cartesian[1] = 0
 	$pixel_flat = _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
-	For $trueAnomaly = -$Orbit[11] To $Orbit[11] * 1.01 Step 0.05
-		$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($Orbit, $trueAnomaly)
+	For $trueAnomaly = -$orbit[11] To $orbit[11] * 1.01 Step 0.05
+		$cartesian = _Orbit_CalcCartesianCoordsAtTrueAnomaly($orbit, $trueAnomaly)
 		$pixel_new = _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
-		If $cartesian[1] > 0 Then
+		$elevation = $cartesian[1]
+		$cartesian[1] = 0
+		$pixel_flat_new = _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
+		_GDIPlus_GraphicsDrawLine($_ORBITRENDERER_HGRAPHIC, $pixel_flat[0], $pixel_flat[1], $pixel_flat_new[0], $pixel_flat_new[1], $_ORBITRENDERER_HPENLGRAY)
+		If $elevation > 0 Then
 			_GDIPlus_GraphicsDrawLine($_ORBITRENDERER_HGRAPHIC, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenAbove)
 		Else
 			_GDIPlus_GraphicsDrawLine($_ORBITRENDERER_HGRAPHIC, $pixel[0], $pixel[1], $pixel_new[0], $pixel_new[1], $hPenBelow)
 		EndIf
-		$cartesian[1] = 0
-		$pixel_flat_new = _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
-		_GDIPlus_GraphicsDrawLine($_ORBITRENDERER_HGRAPHIC, $pixel_flat[0], $pixel_flat[1], $pixel_flat_new[0], $pixel_flat_new[1], $_ORBITRENDERER_HPENLGRAY)
 		$pixel_flat = $pixel_flat_new
 		$pixel = $pixel_new
 	Next
