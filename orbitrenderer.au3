@@ -12,8 +12,8 @@ $ORBIT_EARTH = _Orbit_FromMPCElements("0109P         2024 03 21.0000  1.000000  
 
 Func _OrbitRenderer_Startup($width, $height)
 	_GDIPlus_Startup()
-    $_ORBITRENDERER_IWIDTH = $width
-    $_ORBITRENDERER_IHEIGHT = $height
+	$_ORBITRENDERER_IWIDTH = $width
+	$_ORBITRENDERER_IHEIGHT = $height
 	$_ORBITRENDERER_HBITMAP = _WinAPI_CreateBitmap($width, $height, 1, 32)
 	$_ORBITRENDERER_HIMAGE = _GDIPlus_BitmapCreateFromHBITMAP($_ORBITRENDERER_HBITMAP)
 	$_ORBITRENDERER_HGRAPHIC = _GDIPlus_ImageGetGraphicsContext($_ORBITRENDERER_HIMAGE)
@@ -22,10 +22,10 @@ Func _OrbitRenderer_Startup($width, $height)
 	$_ORBITRENDERER_HREDBRUSH = _GDIPlus_BrushCreateSolid(0xFFFF0000)
 	$_ORBITRENDERER_HYELLOWBRUSH = _GDIPlus_BrushCreateSolid(0xFFFFFF00)
 	$_ORBITRENDERER_HPENRED = _GDIPlus_PenCreate(0xFFFF0000, 3)
-	$_ORBITRENDERER_HPENPALERED = _GDIPlus_PenCreate(0xFFFFD0D0, 3)
+	$_ORBITRENDERER_HPENPALERED = _GDIPlus_PenCreate(0xFFFFA0A0, 3)
 	$_ORBITRENDERER_HPENBLACK = _GDIPlus_PenCreate(0xFF000000, 3)
-	$_ORBITRENDERER_HPENDGRAY = _GDIPlus_PenCreate(0xFF808080, 1)
-	$_ORBITRENDERER_HPENLGRAY = _GDIPlus_PenCreate(0xFFE0E0E0, 1)
+	$_ORBITRENDERER_HPENDGRAY = _GDIPlus_PenCreate(0xFF707070, 1)
+	$_ORBITRENDERER_HPENLGRAY = _GDIPlus_PenCreate(0xFF989898, 1)
 EndFunc   ;==>_OrbitRenderer_Startup
 
 Func _OrbitRenderer_Shutdown()
