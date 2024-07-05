@@ -45,10 +45,10 @@ Func post_interesting_orbits()
         $numObjects += 1
     Next
 
-    Dim $perspective = [7 / 18 * 3.1415926535, -1 / 7 * 3.1415926535, 600 / 2, 448 / 2, 1e6, 0]
+    Dim $perspective = [7 / 18 * 3.1415926535, -1 / 7 * 3.1415926535, 960 / 2, 768 / 2, 7.5e5, 0]
     Dim $data = [$perspective, $renderedObjects]
-    $img = drawLabelContent(600, 448, "drawOrbits", $data)
-    $re = _smartesl_displayImage("A2A34202", $img, "1", "true", "false", "0", "false", "0")
+    $img = drawLabelContent(960, 768, "drawOrbits", $data)
+    $re = _smartesl_displayImage("1F00015E", $img, "1", "true", "false", "0", "false", "90")
     ConsoleWrite($re & @CRLF)
 
 EndFunc   ;==>post_interesting_orbits
@@ -80,9 +80,9 @@ Func drawOrbits($hGraphic, $hBlackBrush, $hRedBrush, $hWhiteBrush, $hYellowBrush
     For $i = 0 To UBound($objects) - 1
         $objects[$i] = _Orbit_FromMPCElements($objects[$i])
     Next
-
-    $LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($renderMeta[0], $renderMeta[1], $renderMeta[2], $renderMeta[3], $renderMeta[4])
+    
     _OrbitRenderer_Startup($iwidth, $iheight)
+    $LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($renderMeta[0], $renderMeta[1], $renderMeta[2], $renderMeta[3], $renderMeta[4])
     $hImage = _OrbitRenderer_RenderOrbits($objects, $renderMeta[5], $LABEL_FRAME)
     _GDIPlus_GraphicsDrawImage($hGraphic, $hImage, 0, 0)
     _OrbitRenderer_Shutdown()
