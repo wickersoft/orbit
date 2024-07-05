@@ -24,18 +24,34 @@ Func post_interesting_orbits()
     $numObjects = 0
     For $i = 1 To $objects[0]
         $orbit = _Orbit_FromMPCElements($objects[$i])
-        If $orbit[12] > -1e7 And $orbit[12] < 3e7 And $orbit[1] < 1.5 And $orbit[6] < 10 Then 
-            ConsoleWrite($objects[$i] & "    " & $orbit[12] & @CRLF)
-            ReDim $renderedObjects[$numObjects + 1]
-            $renderedObjects[$numObjects] = $objects[$i]
-            $numObjects += 1
-        EndIf
+
+        ; If perihelion date or radius don't look good we move on
+        If $orbit[12] < -1e7 Or $orbit[12] > 3e7 Or $orbit[1] > 1.5 Or $orbit[6] > 10 Then ContinueLoop
+
+        ; Simulate the comet and see if it actually becomes bright
+        $maxmag = 0
+        $minmag = 25
+        For $refTime = -1e6 To 3e7 Step 100000
+            $mag = _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
+            If $mag > $maxmag Then $maxmag = $mag
+            If $mag < $minmag Then $minmag = $mag
+        Next
+
+        If $minmag > 8 Then ContinueLoop
+
+        ConsoleWrite($objects[$i] & "    " & $minmag & @CRLF)
+        ReDim $renderedObjects[$numObjects + 1]
+        $renderedObjects[$numObjects] = $objects[$i]
+        $numObjects += 1
     Next
-    
-    Dim $perspective = [7 / 18 * 3.1415926535, -1 / 7 * 3.1415926535, 600 / 2, 448 / 2, 1e6, 0]    
+
+    Dim $perspective = [7 / 18 * 3.1415926535, -1 / 7 * 3.1415926535, 600 / 2, 448 / 2, 1e6, 0]
     Dim $data = [$perspective, $renderedObjects]
-	drawLabelContent(600, 448, "drawOrbits", $data)
-EndFunc   ;==>post_orbit
+    $img = drawLabelContent(600, 448, "drawOrbits", $data)
+    $re = _smartesl_displayImage("A2A34202", $img, "1", "true", "false", "0", "false", "0")
+    ConsoleWrite($re & @CRLF)
+
+EndFunc   ;==>post_interesting_orbits
 
 Func drawLightCurve($hGraphic, $hBlackBrush, $hRedBrush, $hWhiteBrush, $hYellowBrush, $iwidth, $iheight, $data)
 	$orbit = _Orbit_FromMPCElements($data)
