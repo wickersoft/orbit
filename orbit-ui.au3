@@ -2,16 +2,12 @@
 #include <GUIConstantsEx.au3>
 #include "orbit.au3"
 #include "orbitrenderer.au3"
+#include "..\Wickersoft_HTTP.au3"
 
-;_Orbit_FromMPCElements("    CK24E010  2026 01 20.7399  0.565276  1.000019  243.6550  108.1078   75.2342  20240703   7.0  4.0  C/2024 E1 (Wierzchos)                                    MPEC 2024-M41"), _
-;_Orbit_FromMPCElements("0141P      b  2026 04 15.2237  0.807348  0.735812  241.7800  153.6144   13.9864  20240703   9.0  4.0  141P-B/Machholz                                          MPC 24216"), _
-;_Orbit_FromMPCElements("0109P         1992 12 19.8047  0.979463  0.962634  153.2308  139.5093  113.3770  20240629   4.0  6.0  109P/Swift-Tuttle                                        105,  420"), _
-;_Orbit_FromMPCElements("0003D         2025 06 26.2215  0.823006  0.767472  192.2857  276.1865    7.8876  20240629  11.0  6.0  3D/Biela                                                  76, 1135"), _
+;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8")]
 
-Dim $ALL_ORBITS = [ _
-_Orbit_FromMPCElements("    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8"), _
-_Orbit_FromMPCElements("    CK24G030  2025 01 13.4265  0.093502  1.000012  108.1232  220.3292  116.8529  20240703   9.0  4.0  C/2024 G3 (ATLAS)                                        MPEC 2024-MB8") _
-]
+Dim $perspective = [7 / 18 * 3.1415926535, -1 / 7 * 3.1415926535, 600 / 2, 448 / 2, 1e6, 0]
+$ALL_ORBITS = get_interesting_orbits()
 
 $width = 1200
 $height = 800
@@ -40,9 +36,42 @@ While 1
 	$LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $width / 2, $height / 2, $kmPerPixel)
     $hImage = _OrbitRenderer_RenderOrbits($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
     _GDIPlus_GraphicsDrawImage($hGraphicGui, $hImage, 0, 0)
-    
+
     ;$viewAz += 0.01
-	$simOffsetSeconds += 100000
+	$simOffsetSeconds += 86400
 WEnd
 
 _OrbitRenderer_Shutdown()
+
+
+Func get_interesting_orbits()
+	Dim $ORBITS[0]
+	$http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
+	$txt = BinaryToString($http[0])
+	$objects = StringSplit($txt, @LF, 1)
+	$numObjects = 0
+	For $i = 1 To $objects[0]
+		$orbit = _Orbit_FromMPCElements($objects[$i])
+
+		; If perihelion date or radius don't look good we move on
+		If $orbit[12] < -1e7 Or $orbit[12] > 3e7 Or $orbit[1] > 1.5 Or $orbit[6] > 10 Then ContinueLoop
+
+		; Simulate the comet and see if it actually becomes bright
+		$maxmag = 0
+		$minmag = 25
+		For $refTime = -1e6 to 3e7 step 100000
+			$mag = _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
+			If $mag > $maxmag then $maxmag = $mag
+			If $mag < $minmag then $minmag = $mag
+		Next
+
+		If $minmag > 8 then ContinueLoop
+
+		ConsoleWrite($objects[$i] & "    " & $minmag & @CRLF)
+		ReDim $ORBITS[$numObjects + 1]
+		$ORBITS[$numObjects] = $orbit
+		$numObjects += 1
+	Next
+
+	Return $ORBITS
+EndFunc   ;==>post_interesting_orbits
