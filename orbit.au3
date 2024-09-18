@@ -165,13 +165,14 @@ Func _Orbit_CalcEllEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 
     $E = 0
 
-    For $i = 0 To 8
-        ConsoleWrite("E" & $i & ": " & $E & @CRLF)
+    For $i = 0 To 25
+        ;ConsoleWrite("E" & $i & ": " & $E & @CRLF)
         $ex = $E - $Orbit[2] * Sin($E) - $meanAnomaly ; Kepler
         $exdx = 1 - $Orbit[2] * Cos($E) ; Kepler_d_dF
         ;ConsoleWrite(" ex: " & $ex & @CRLF)
         ;ConsoleWrite(" exdx: " & $exdx & @CRLF)
 
+        If abs($ex/$exdx) < 1e-6 Then ExitLoop
         $E = $E - $ex / $exdx
 
         If $E > 4 Then $E = 4
@@ -179,7 +180,7 @@ Func _Orbit_CalcEllEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
 
     Next
 
-    ConsoleWrite("Final E: " & $E & @CRLF)
+    ;ConsoleWrite("Final E: " & $E & @CRLF)
     Return $E
 EndFunc   ;==>_Orbit_CalcEllEccentricAnomaly
 
@@ -213,14 +214,14 @@ EndFunc   ;==>_Orbit_CalcHyperbolicMeanMotion
 Func _Orbit_CalcHypEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
     $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
     
-    ConsoleWrite("Initial M: " & $meanAnomaly & @CRLF)
-    If $meanAnomaly < 1 Then 
+    ;ConsoleWrite("Initial M: " & $meanAnomaly & @CRLF)
+    If $meanAnomaly < 0 Then 
         $F = -1
     Else
         $F = 1
     EndIf
     
-    For $i = 0 To 12
+    For $i = 0 To 25
         ;ConsoleWrite("F" & $i & ": " & $F & @CRLF)
         $fx = $Orbit[2] * sinh($F) - $F - $meanAnomaly ; Kepler
         $fxdx = $Orbit[2] * cosh($F) - 1 ; Kepler_d_dF
@@ -228,9 +229,9 @@ Func _Orbit_CalcHypEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
         ;ConsoleWrite(" fxdx: " & $fxdx & @CRLF)
         ;ConsoleWrite("  " & $Orbit[2] & " * " & cosh($F) & " - 1" & @CRLF)
         ;ConsoleWrite("    " & $F & @CRLF)
+        If abs($fx/$fxdx) < 1e-8 Then ExitLoop
         $F = $F - $fx / $fxdx ; Newton my beloved
     Next
-
     ;ConsoleWrite("Final F: " & $F & @CRLF)
     Return $F
 EndFunc   ;==>_Orbit_CalcHypEccentricAnomaly
