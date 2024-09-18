@@ -136,16 +136,23 @@ EndFunc   ;==>_Orbit_CalcCartesianCoordsAtPolarCoords
 
 ;  ELLIPTICAL ORBITS
 
+Func _Orbit_CalcEllSemiMajorAxis(ByRef $Orbit)
+    If $Orbit[2] >= 1 Then Return -1
+    $semiMajorAxis = $Orbit[9] ^ 2 / ($SUN_MU * (1 - $Orbit[2] ^ 2))
+    Return $semiMajorAxis
+EndFunc   ;==>_Orbit_CalcEllSemiMajorAxis
+
+Func _Orbit_CalcEllOrbitalPeriod(ByRef $Orbit)
+    If $Orbit[2] >= 1 Then Return -1
+    $semiMajorAxis = _Orbit_CalcEllSemiMajorAxis($Orbit)
+    $orbitalPeriod = 2 * 3.14159265359 / Sqrt($SUN_MU) * $semiMajorAxis ^ (3 / 2)
+    Return $orbitalPeriod
+EndFunc   ;==>_Orbit_CalcEllOrbitalPeriod
 
 Func _Orbit_CalcEllipticalMeanMotion(ByRef $Orbit)
-    $semiMajorAxis = $Orbit[9] ^ 2 / ($SUN_MU * (1 - $Orbit[2] ^ 2))
-    ;ConsoleWrite("Semi-major axis: " & $semiMajorAxis & "Km" & @CRLF)
-
-    $orbitalPeriod = 2 * 3.14159265359 / Sqrt($SUN_MU) * $semiMajorAxis ^ (3 / 2)
-    $ellMeanAnomaly = 2 * 3.14159265359 / $orbitalPeriod
-    ;ConsoleWrite("Me: " & $ellMeanAnomaly & @CRLF)
-
-    Return $ellMeanAnomaly
+    $semiMajorAxis = _Orbit_CalcEllSemiMajorAxis($Orbit)
+    $ellMeanMotion = Sqrt($SUN_MU) / $semiMajorAxis ^ (3 / 2)
+    Return $ellMeanMotion
 EndFunc   ;==>_Orbit_CalcEllipticalMeanMotion
 
 Func _Orbit_CalcEllEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
