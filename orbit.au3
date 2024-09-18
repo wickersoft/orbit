@@ -124,8 +124,8 @@ Func _Orbit_CalcCartesianCoordsAtPolarCoords(ByRef $Orbit, $polar)
     $cartesian[2] = Cos($Orbit[5]) * $cartesian[2]
 
     ; Apply longitude of ascending node
-    $x = Cos($Orbit[4]) * $cartesian[0] - Sin($Orbit[4]) * $cartesian[2]
-    $z = Cos($Orbit[4]) * $cartesian[2] + Sin($Orbit[4]) * $cartesian[0]
+    $x = -Cos($Orbit[4]) * $cartesian[0] + Sin($Orbit[4]) * $cartesian[2]
+    $z = -Cos($Orbit[4]) * $cartesian[2] - Sin($Orbit[4]) * $cartesian[0]
 
     $cartesian[0] = $x
     $cartesian[2] = $z
