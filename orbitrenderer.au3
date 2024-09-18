@@ -64,17 +64,18 @@ Func _OrbitRenderer_RenderLightCurve(ByRef $orbit, ByRef $observations, $startDa
     _GDIPlus_GraphicsDrawLine($_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_IWIDTH / 3, 0, $_ORBITRENDERER_IWIDTH / 3, $_ORBITRENDERER_IHEIGHT, $_ORBITRENDERER_HPENDGRAY)
 
     ; Draw observations scatter plot
-    For $i = 1 To $observations[0]
-        $d = StringReplace(StringMid($observations[$i], 16, 10), " ", "/")
-        $mag = StringMid($observations[$i], 66, 4)
-        ;if StringMid($observations[$i], 71, 1) <> "G" then ContinueLoop
-        If Not StringRegExp($mag, "[0-9\.]+") Then ContinueLoop
-        $mag = Number($mag)
-        $days = _DateDiff("d", $_NOW_DATE, $d)
-        ;ConsoleWrite($d & ": " & $days & " " & $mag & @CRLF)
-        _GDIPlus_GraphicsFillRect($_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_IWIDTH / 3 + 2 * $days, 25 * $mag, 1, 1, $_ORBITRENDERER_HBLACKBRUSH)
-    Next
-
+    If IsArray($observations) Then
+        For $i = 1 To $observations[0]
+            $d = StringReplace(StringMid($observations[$i], 16, 10), " ", "/")
+            $mag = StringMid($observations[$i], 66, 4)
+            ;if StringMid($observations[$i], 71, 1) <> "G" then ContinueLoop
+            If Not StringRegExp($mag, "[0-9\.]+") Then ContinueLoop
+            $mag = Number($mag)
+            $days = _DateDiff("d", $_NOW_DATE, $d)
+            ;ConsoleWrite($d & ": " & $days & " " & $mag & @CRLF)
+            _GDIPlus_GraphicsFillRect($_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_IWIDTH / 3 + 2 * $days, 25 * $mag, 1, 1, $_ORBITRENDERER_HBLACKBRUSH)
+        Next
+    EndIf
 
     ; Draw calendar lines
     $_THIS_MONTH_DATE = @YEAR & "/" & @MON & "/01"
