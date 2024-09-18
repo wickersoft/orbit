@@ -8,7 +8,7 @@
 #include "orbit.au3"
 
 Global $_ORBITRENDERER_HBITMAP, $_ORBITRENDERER_HIMAGE, $_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_HWHITEBRUSH, $_ORBITRENDERER_HBLACKBRUSH, $_ORBITRENDERER_HREDBRUSH, $_ORBITRENDERER_HYELLOWBRUSH, $_ORBITRENDERER_HPENRED, $_ORBITRENDERER_HPENPALERED, $_ORBITRENDERER_HPENBLACK, $_ORBITRENDERER_HPENDGRAY, $_ORBITRENDERER_HPENLGRAY, $_ORBITRENDERER_IWIDTH, $_ORBITRENDERER_IHEIGHT
-$ORBIT_EARTH = _Orbit_FromMPCElements("0109P         2024 03 21.0000  1.000000  0.000000  180.0000    0.0000    0.0000  20240629   4.0  6.0  Earth                                                    105,  420")
+$ORBIT_EARTH = _Orbit_FromMPCElements("0109P         2024 03 21.0000  0.981000  0.016210  180.0000    0.0000    0.0000  20240629   4.0  6.0  Earth                                                    105,  420")
 
 Func _OrbitRenderer_Startup($width, $height)
     _GDIPlus_Startup()
@@ -130,7 +130,7 @@ Func _OrbitRenderer_RenderOrbits(ByRef $orbitsToRender, $simOffsetSeconds, ByRef
     Next
     _OrbitRenderer_DrawOrbit($ORBIT_EARTH, $simOffsetSeconds, $perspective, $_ORBITRENDERER_HPENBLACK, $_ORBITRENDERER_HPENBLACK)
 
-    _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, _DateAdd("s", $simOffsetSeconds, $_ORBIT_REFERENCE_DATE), $_ORBITRENDERER_IWIDTH - 90, $_ORBITRENDERER_IHEIGHT - 20, 90, 20, $_ORBITRENDERER_HBLACKBRUSH, "Arial", 10)
+    _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, _DateAdd("s", $simOffsetSeconds, $_ORBIT_REFERENCE_DATE), $_ORBITRENDERER_IWIDTH - 90, $_ORBITRENDERER_IHEIGHT - 20, 100, 20, $_ORBITRENDERER_HBLACKBRUSH, "Arial", 10)
 
     Return $_ORBITRENDERER_HIMAGE
 EndFunc   ;==>_OrbitRenderer_RenderOrbits

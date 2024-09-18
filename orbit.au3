@@ -124,8 +124,8 @@ Func _Orbit_CalcCartesianCoordsAtPolarCoords(ByRef $Orbit, $polar)
     $cartesian[2] = Cos($Orbit[5]) * $cartesian[2]
 
     ; Apply longitude of ascending node
-    $x = Cos($Orbit[4]) * $cartesian[0] - Sin($Orbit[4]) * $cartesian[2]
-    $z = Cos($Orbit[4]) * $cartesian[2] + Sin($Orbit[4]) * $cartesian[0]
+    $x = -Cos($Orbit[4]) * $cartesian[0] + Sin($Orbit[4]) * $cartesian[2]
+    $z = -Cos($Orbit[4]) * $cartesian[2] - Sin($Orbit[4]) * $cartesian[0]
 
     $cartesian[0] = $x
     $cartesian[2] = $z
@@ -136,28 +136,48 @@ EndFunc   ;==>_Orbit_CalcCartesianCoordsAtPolarCoords
 
 ;  ELLIPTICAL ORBITS
 
+Func _Orbit_CalcEllSemiMajorAxis(ByRef $Orbit)
+    If $Orbit[2] >= 1 Then Return -1
+    $semiMajorAxis = $Orbit[9] ^ 2 / ($SUN_MU * (1 - $Orbit[2] ^ 2))
+    Return $semiMajorAxis
+EndFunc   ;==>_Orbit_CalcEllSemiMajorAxis
+
+Func _Orbit_CalcEllOrbitalPeriod(ByRef $Orbit)
+    If $Orbit[2] >= 1 Then Return -1
+    $semiMajorAxis = _Orbit_CalcEllSemiMajorAxis($Orbit)
+    $orbitalPeriod = 2 * 3.14159265359 / Sqrt($SUN_MU) * $semiMajorAxis ^ (3 / 2)
+    Return $orbitalPeriod
+EndFunc   ;==>_Orbit_CalcEllOrbitalPeriod
 
 Func _Orbit_CalcEllipticalMeanMotion(ByRef $Orbit)
-    $semiMajorAxis = $Orbit[9] ^ 2 / ($SUN_MU * (1 - $Orbit[2] ^ 2))
-    ;ConsoleWrite("Semi-major axis: " & $semiMajorAxis & "Km" & @CRLF)
-
-    $orbitalPeriod = 2 * 3.14159265359 / Sqrt($SUN_MU) * $semiMajorAxis ^ (3 / 2)
-    $ellMeanAnomaly = 2 * 3.14159265359 / $orbitalPeriod
-    ;ConsoleWrite("Me: " & $ellMeanAnomaly & @CRLF)
-
-    Return $ellMeanAnomaly
+    $semiMajorAxis = _Orbit_CalcEllSemiMajorAxis($Orbit)
+    $ellMeanMotion = Sqrt($SUN_MU) / $semiMajorAxis ^ (3 / 2)
+    Return $ellMeanMotion
 EndFunc   ;==>_Orbit_CalcEllipticalMeanMotion
 
 Func _Orbit_CalcEllEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
     $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
 
-    $E = 3.14159
+    ; Normalize mean anomaly so the solver converges faster
+    $num_excess_pi = ($meanAnomaly + 3.14159265359) / (2 * 3.14159265359)
+    $num_excess_pi = Floor($num_excess_pi)
+    $meanAnomaly -= 2 * $num_excess_pi * 3.14159265359
+
+    $E = 0
 
     For $i = 0 To 25
         ;ConsoleWrite("E" & $i & ": " & $E & @CRLF)
         $ex = $E - $Orbit[2] * Sin($E) - $meanAnomaly ; Kepler
         $exdx = 1 - $Orbit[2] * Cos($E) ; Kepler_d_dF
+        ;ConsoleWrite(" ex: " & $ex & @CRLF)
+        ;ConsoleWrite(" exdx: " & $exdx & @CRLF)
+
+        If abs($ex/$exdx) < 1e-6 Then ExitLoop
         $E = $E - $ex / $exdx
+
+        If $E > 4 Then $E = 4
+        If $E < -4 Then $E = -4
+
     Next
 
     ;ConsoleWrite("Final E: " & $E & @CRLF)
@@ -193,17 +213,25 @@ EndFunc   ;==>_Orbit_CalcHyperbolicMeanMotion
 
 Func _Orbit_CalcHypEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
     $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
-
+    
     ;ConsoleWrite("Initial M: " & $meanAnomaly & @CRLF)
-    $F = 3.14159
-
+    If $meanAnomaly < 0 Then 
+        $F = -1
+    Else
+        $F = 1
+    EndIf
+    
     For $i = 0 To 25
         ;ConsoleWrite("F" & $i & ": " & $F & @CRLF)
         $fx = $Orbit[2] * sinh($F) - $F - $meanAnomaly ; Kepler
         $fxdx = $Orbit[2] * cosh($F) - 1 ; Kepler_d_dF
+        ;ConsoleWrite(" fx: " & $fx & @CRLF)
+        ;ConsoleWrite(" fxdx: " & $fxdx & @CRLF)
+        ;ConsoleWrite("  " & $Orbit[2] & " * " & cosh($F) & " - 1" & @CRLF)
+        ;ConsoleWrite("    " & $F & @CRLF)
+        If abs($fx/$fxdx) < 1e-8 Then ExitLoop
         $F = $F - $fx / $fxdx ; Newton my beloved
     Next
-
     ;ConsoleWrite("Final F: " & $F & @CRLF)
     Return $F
 EndFunc   ;==>_Orbit_CalcHypEccentricAnomaly
