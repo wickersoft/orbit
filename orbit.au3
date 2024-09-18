@@ -151,16 +151,28 @@ EndFunc   ;==>_Orbit_CalcEllipticalMeanMotion
 Func _Orbit_CalcEllEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
     $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
 
-    $E = 3.14159
+    ; Normalize mean anomaly so the solver converges faster
+    $num_excess_pi = ($meanAnomaly + 3.14159265359) / (2 * 3.14159265359)
+    $num_excess_pi = Floor($num_excess_pi)
+    $meanAnomaly -= 2 * $num_excess_pi * 3.14159265359
 
-    For $i = 0 To 25
-        ;ConsoleWrite("E" & $i & ": " & $E & @CRLF)
+    $E = 0
+
+    For $i = 0 To 8
+        ConsoleWrite("E" & $i & ": " & $E & @CRLF)
         $ex = $E - $Orbit[2] * Sin($E) - $meanAnomaly ; Kepler
         $exdx = 1 - $Orbit[2] * Cos($E) ; Kepler_d_dF
+        ;ConsoleWrite(" ex: " & $ex & @CRLF)
+        ;ConsoleWrite(" exdx: " & $exdx & @CRLF)
+
         $E = $E - $ex / $exdx
+
+        If $E > 4 Then $E = 4
+        If $E < -4 Then $E = -4
+
     Next
 
-    ;ConsoleWrite("Final E: " & $E & @CRLF)
+    ConsoleWrite("Final E: " & $E & @CRLF)
     Return $E
 EndFunc   ;==>_Orbit_CalcEllEccentricAnomaly
 
@@ -193,14 +205,22 @@ EndFunc   ;==>_Orbit_CalcHyperbolicMeanMotion
 
 Func _Orbit_CalcHypEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
     $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
-
-    ;ConsoleWrite("Initial M: " & $meanAnomaly & @CRLF)
-    $F = 3.14159
-
-    For $i = 0 To 25
+    
+    ConsoleWrite("Initial M: " & $meanAnomaly & @CRLF)
+    If $meanAnomaly < 1 Then 
+        $F = -1
+    Else
+        $F = 1
+    EndIf
+    
+    For $i = 0 To 12
         ;ConsoleWrite("F" & $i & ": " & $F & @CRLF)
         $fx = $Orbit[2] * sinh($F) - $F - $meanAnomaly ; Kepler
         $fxdx = $Orbit[2] * cosh($F) - 1 ; Kepler_d_dF
+        ;ConsoleWrite(" fx: " & $fx & @CRLF)
+        ;ConsoleWrite(" fxdx: " & $fxdx & @CRLF)
+        ;ConsoleWrite("  " & $Orbit[2] & " * " & cosh($F) & " - 1" & @CRLF)
+        ;ConsoleWrite("    " & $F & @CRLF)
         $F = $F - $fx / $fxdx ; Newton my beloved
     Next
 
