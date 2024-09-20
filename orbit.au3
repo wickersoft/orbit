@@ -89,6 +89,18 @@ Func _Orbit_CalcRefTimeAtDate($time = _NowCalcDate())
     Return $refTime
 EndFunc   ;==>_Orbit_CalcRefTimeAtDate
 
+Func _Orbit_CalcMeanAnomalyAtDate(ByRef $Orbit, $time = _NowCalcDate())
+    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtDate($Orbit, $time)
+    $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
+    Return $meanAnomaly
+EndFunc   ;==>_Orbit_CalcMeanAnomalyAtDate
+
+Func _Orbit_CalcMeanAnomalyAtRefTime(ByRef $Orbit, $refTime)
+    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtRefTime($Orbit, $refTime)
+    $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
+    Return $meanAnomaly
+EndFunc
+
 Func _Orbit_CalcSecondsSincePeriapsisAtRefTime(ByRef $Orbit, $refTime)
     Return $refTime - $Orbit[12]
 EndFunc   ;==>_Orbit_CalcSecondsSincePeriapsisAtRefTime
