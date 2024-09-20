@@ -77,12 +77,13 @@ Func IsPressed($iMsg, $iwParam, $ilParam)
 
     $LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $width / 2, $height / 2, $kmPerPixel)
     $hImage = _OrbitRenderer_RenderOrbits($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
-    
-    $ssp = _Orbit_CalcSecondsSincePeriapsisAtRefTime($ALL_ORBITS[0], $simOffsetSeconds)
+
+    $ma = _Orbit_CalcMeanAnomalyAtRefTime($ALL_ORBITS[0], $simOffsetSeconds)
+	$ssp = _Orbit_CalcSecondsSincePeriapsisAtRefTime($ALL_ORBITS[0], $simOffsetSeconds)
     $ta = _Orbit_CalcHyperbolicTrueAnomaly($ALL_ORBITS[0], $ssp)
-    ConsoleWrite($ta & @CRLF)
-    
-    
+    ConsoleWrite("ma: " & $ma & " ta: " & $ta & @CRLF)
+
+
     _GDIPlus_GraphicsDrawImage($hGraphicGui, $hImage, 0, 0)
 EndFunc   ;==>IsPressed
 
