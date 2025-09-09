@@ -201,7 +201,12 @@ Func _OrbitRenderer_DrawOrbit($orbit, $simOffsetSeconds, $perspective, $hPenAbov
     $cartesian = _Orbit_CalcCartesianCoordsAtRefTime($orbit, $simOffsetSeconds)
     $pixel = _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
     _GDIPlus_GraphicsFillEllipse($_ORBITRENDERER_HGRAPHIC, $pixel[0] - 3, $pixel[1] - 3, 6, 6, $_ORBITRENDERER_HREDBRUSH)
-    _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, $orbit[8], $pixel[0] - 60, $pixel[1] - 20, 400, 100, $_ORBITRENDERER_HREDBRUSH)
+    $bright = Round(_OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $simOffsetSeconds), 1)
+    If $orbit[8] = "Earth" Then
+        _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, $orbit[8], $pixel[0] - 60, $pixel[1] - 20, 400, 100, $_ORBITRENDERER_HREDBRUSH)
+    Else
+        _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, $orbit[8] & "  " & $bright, $pixel[0] - 60, $pixel[1] - 20, 400, 100, $_ORBITRENDERER_HREDBRUSH)
+    EndIf
 EndFunc   ;==>_OrbitRenderer_DrawOrbit
 
 Func _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
