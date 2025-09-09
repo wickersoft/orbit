@@ -65,6 +65,7 @@ EndFunc   ;==>_Orbit_CalcAsymptoticTrueAnomaly
 
 ; ========== AVAILABLE CALCULATIONS  =============
 
+
 #cs
 
 FROM:       TO: DATE    REFTIME SEC.SINCE.PERI  TRUE.ANOMALY    POLAR   CARTESIAN   RADIUS  SPEED
@@ -88,6 +89,18 @@ Func _Orbit_CalcRefTimeAtDate($time = _NowCalcDate())
     If $refTime = 0 Then $refTime = -_DateDiff("s", $time, $_ORBIT_REFERENCE_DATE)
     Return $refTime
 EndFunc   ;==>_Orbit_CalcRefTimeAtDate
+
+Func _Orbit_CalcMeanAnomalyAtDate(ByRef $Orbit, $time = _NowCalcDate())
+    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtDate($Orbit, $time)
+    $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
+    Return $meanAnomaly
+EndFunc   ;==>_Orbit_CalcMeanAnomalyAtDate
+
+Func _Orbit_CalcMeanAnomalyAtRefTime(ByRef $Orbit, $refTime)
+    $SecondsSincePeriapsis = _Orbit_CalcSecondsSincePeriapsisAtRefTime($Orbit, $refTime)
+    $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
+    Return $meanAnomaly
+EndFunc
 
 Func _Orbit_CalcSecondsSincePeriapsisAtRefTime(ByRef $Orbit, $refTime)
     Return $refTime - $Orbit[12]
@@ -136,6 +149,7 @@ EndFunc   ;==>_Orbit_CalcCartesianCoordsAtPolarCoords
 
 ;  ELLIPTICAL ORBITS
 
+
 Func _Orbit_CalcEllSemiMajorAxis(ByRef $Orbit)
     If $Orbit[2] >= 1 Then Return -1
     $semiMajorAxis = $Orbit[9] ^ 2 / ($SUN_MU * (1 - $Orbit[2] ^ 2))
@@ -172,7 +186,7 @@ Func _Orbit_CalcEllEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
         ;ConsoleWrite(" ex: " & $ex & @CRLF)
         ;ConsoleWrite(" exdx: " & $exdx & @CRLF)
 
-        If abs($ex/$exdx) < 1e-6 Then ExitLoop
+        If Abs($ex / $exdx) < 1E-6 Then ExitLoop
         $E = $E - $ex / $exdx
 
         If $E > 4 Then $E = 4
@@ -213,14 +227,14 @@ EndFunc   ;==>_Orbit_CalcHyperbolicMeanMotion
 
 Func _Orbit_CalcHypEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
     $meanAnomaly = $Orbit[10] * $SecondsSincePeriapsis
-    
+
     ;ConsoleWrite("Initial M: " & $meanAnomaly & @CRLF)
-    If $meanAnomaly < 0 Then 
+    If $meanAnomaly < 0 Then
         $F = -1
     Else
         $F = 1
     EndIf
-    
+
     For $i = 0 To 25
         ;ConsoleWrite("F" & $i & ": " & $F & @CRLF)
         $fx = $Orbit[2] * sinh($F) - $F - $meanAnomaly ; Kepler
@@ -229,11 +243,11 @@ Func _Orbit_CalcHypEccentricAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)
         ;ConsoleWrite(" fxdx: " & $fxdx & @CRLF)
         ;ConsoleWrite("  " & $Orbit[2] & " * " & cosh($F) & " - 1" & @CRLF)
         ;ConsoleWrite("    " & $F & @CRLF)
-        If abs($fx/$fxdx) < 1e-8 Then ExitLoop
+        If Abs($fx / $fxdx) < 1E-8 Then ExitLoop
         $F = $F - $fx / $fxdx ; Newton my beloved
     Next
     ;ConsoleWrite("Final F: " & $F & @CRLF)
-    Return $F
+    Return SetExtended($i, $F)
 EndFunc   ;==>_Orbit_CalcHypEccentricAnomaly
 
 Func _Orbit_CalcHyperbolicTrueAnomaly(ByRef $Orbit, $SecondsSincePeriapsis)

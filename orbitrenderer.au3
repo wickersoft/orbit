@@ -64,17 +64,18 @@ Func _OrbitRenderer_RenderLightCurve(ByRef $orbit, ByRef $observations, $startDa
     _GDIPlus_GraphicsDrawLine($_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_IWIDTH / 3, 0, $_ORBITRENDERER_IWIDTH / 3, $_ORBITRENDERER_IHEIGHT, $_ORBITRENDERER_HPENDGRAY)
 
     ; Draw observations scatter plot
-    For $i = 1 To $observations[0]
-        $d = StringReplace(StringMid($observations[$i], 16, 10), " ", "/")
-        $mag = StringMid($observations[$i], 66, 4)
-        ;if StringMid($observations[$i], 71, 1) <> "G" then ContinueLoop
-        If Not StringRegExp($mag, "[0-9\.]+") Then ContinueLoop
-        $mag = Number($mag)
-        $days = _DateDiff("d", $_NOW_DATE, $d)
-        ;ConsoleWrite($d & ": " & $days & " " & $mag & @CRLF)
-        _GDIPlus_GraphicsFillRect($_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_IWIDTH / 3 + 2 * $days, 25 * $mag, 1, 1, $_ORBITRENDERER_HBLACKBRUSH)
-    Next
-
+    If IsArray($observations) Then
+        For $i = 1 To $observations[0]
+            $d = StringReplace(StringMid($observations[$i], 16, 10), " ", "/")
+            $mag = StringMid($observations[$i], 66, 4)
+            ;if StringMid($observations[$i], 71, 1) <> "G" then ContinueLoop
+            If Not StringRegExp($mag, "[0-9\.]+") Then ContinueLoop
+            $mag = Number($mag)
+            $days = _DateDiff("d", $_NOW_DATE, $d)
+            ;ConsoleWrite($d & ": " & $days & " " & $mag & @CRLF)
+            _GDIPlus_GraphicsFillRect($_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_IWIDTH / 3 + 2 * $days, 25 * $mag, 1, 1, $_ORBITRENDERER_HBLACKBRUSH)
+        Next
+    EndIf
 
     ; Draw calendar lines
     $_THIS_MONTH_DATE = @YEAR & "/" & @MON & "/01"
@@ -119,6 +120,49 @@ Func _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
     $mag = _Orbit_CalcApparentMagnitude($orbit, $polarC[0], $earthDist)
     Return $mag
 EndFunc   ;==>_OrbitRenderer_CalcApparentMagnitudeAtRefTime
+
+Func _OrbitRenderer_CalcAngularDistanceFromSunAtRefTime(ByRef $Orbit, $refTime)
+    $cartesianE = _Orbit_CalcCartesianCoordsAtRefTime($ORBIT_EARTH, $refTime)
+    $cartesianC = _Orbit_CalcCartesianCoordsAtRefTime($Orbit, $refTime)
+
+    Dim $cartesianD[3] = [$cartesianC[0] - $cartesianE[0], $cartesianC[1] - $cartesianE[1], $cartesianC[2] - $cartesianE[2]]
+    Dim $cartesianS[3] = [-$cartesianE[0], -$cartesianE[1], -$cartesianE[2]]
+
+    $gsphericalC = _OrbitRenderer_CartesianToSphericalCoords($cartesianD)
+    $gsphericalS = _OrbitRenderer_CartesianToSphericalCoords($cartesianS)
+
+    Dim $polarD[2] = [$gsphericalC[0] - $gsphericalS[0], $gsphericalC[1]]
+    If $polarD[0] < -3.14159265358979 Then $polarD[0] += 2* 3.14159265358979
+    If $polarD[0] > 3.14159265358979 Then $polarD[0] -= 2* 3.14159265358979
+    Return $polarD
+EndFunc   ;==>_Orbit_CalcAngularDistanceFromSunAtRefTime
+
+Func _OrbitRenderer_CalcAngularDistanceFromSunAtDate(ByRef $Orbit, $date = _NowCalcDate())
+    $refTime = _Orbit_CalcRefTimeAtDate($date)
+    Return _OrbitRenderer_CalcAngularDistanceFromSunAtRefTime($Orbit, $refTime)
+EndFunc   ;==>_Orbit_CalcAngularDistanceFromSunAtDate
+
+Func _OrbitRenderer_CartesianToSphericalCoords($cartesian)
+    $radius = Sqrt($cartesian[0] ^ 2 + $cartesian[1] ^ 2 + $cartesian[2] ^ 2)
+    $pitch = 0
+    $yaw = 0
+
+    $pitch = -ASin($cartesian[1] / $radius)
+
+    If $cartesian[2] = 0 Then
+        If $cartesian[0] >= 0 Then
+            $yaw = 0
+        Else
+            $yaw = -3.14159265358979
+        EndIf
+    ElseIf $cartesian[2] < 0 Then
+        $yaw = -ATan($cartesian[0] / $cartesian[2]) - 1.570796326794896619231321691639751442     ;
+    Else
+        $yaw = 1.570796326794896619231321691639751442 + ATan(-$cartesian[0] / $cartesian[2])    ;
+    EndIf
+    Dim $spherical[3] = [$yaw, $pitch, $radius]
+    Return $spherical
+EndFunc   ;==>CartesianToSphericalCoords
 
 Func _OrbitRenderer_RenderOrbits(ByRef $orbitsToRender, $simOffsetSeconds, ByRef $perspective)
     _GDIPlus_GraphicsClear($_ORBITRENDERER_HGRAPHIC, 0xFFFFFFFF)
