@@ -8,11 +8,12 @@
 #include <Orbit.au3>
 #include <OrbitRenderer.au3>
 
-;post_light_curve()
-post_interesting_orbits()
+post_light_curve()
+;post_interesting_orbits()
 
 Func post_light_curve()
-    drawLabelContent(600, 448, "drawLightCurve", "    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8")
+    ;drawLabelContent(600, 448, "drawLightCurve", "    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8", 2)
+    drawLabelContent(600, 448, "drawLightCurve", "0010P         2026 08  2.1436  1.417495  0.537379  195.4880  117.7992   12.0272  20250901   5.0 10.0  10P/Tempel ", 2)
     ;drawLabelContent(600, 448, "drawLightCurve", "0021P         2025 03 25.3453  1.008991  0.711131  172.9214  195.3374   32.0516  20240703   9.0  6.0  21P/Giacobini-Zinner                                     MPEC 2024-LE0")
 EndFunc   ;==>post_light_curve
 
