@@ -1,5 +1,6 @@
 #include-once
 #include <Date.au3>
+#include <StringConstants.au3>
 
 $SUN_MU = 1.32712e11
 $_ORBIT_REFERENCE_DATE = _NowCalcDate() ; Arbitrary reference date for coordinated time frame
@@ -16,7 +17,7 @@ Func _Orbit_FromMPCElements($MPCElements)
     $Orbit[5] = Number(StringMid($MPCElements, 72, 9)) * 3.14159265359 / 180            ; Inclination (radians)
     $Orbit[6] = Number(StringMid($MPCElements, 92, 4))                                  ; Absolute magnitude
     $Orbit[7] = Number(StringMid($MPCElements, 97, 4))                                  ; Slope parameter
-    $Orbit[8] = StringMid($MPCElements, 103, 56)                                        ; Designation
+    $Orbit[8] = StringStripWS(StringMid($MPCElements, 103, 56),  $STR_STRIPTRAILING)    ; Designation
 
     ; Calculated for convenience and speed
     $Orbit[9] = _Orbit_CalcSpecificAngMomentum($Orbit)                                  ; Specific angular momentum

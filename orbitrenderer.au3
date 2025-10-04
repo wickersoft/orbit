@@ -254,13 +254,13 @@ Func _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
     Return $pixel
 EndFunc   ;==>_OrbitRenderer_ProjectToGraphicCoords
 
-Func _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, $sString, $iX0, $iY0, $iX1, $iY1, $hBrush, $sFont = "Arial", $iFontSize = 12, $iFontStyle = 0, $iStringFormat = 0)
+Func _OrbitRenderer_GraphicsDrawStringExEx($hGraphic, $sString, $iX0, $iY0, $iX1, $iY1, $hBrush, $sFont = "Arial", $iFontSize = 12, $iFontStyle = 0, $iStringFormat = 0)
     $hFormat = _GDIPlus_StringFormatCreate($iStringFormat)
     $hFamily = _GDIPlus_FontFamilyCreate($sFont)
     $hFont = _GDIPlus_FontCreate($hFamily, $iFontSize, $iFontStyle)
     $tLayout = _GDIPlus_RectFCreate($iX0, $iY0, $iX1, $iY1)
 
-    _GDIPlus_GraphicsDrawStringEx($_ORBITRENDERER_HGRAPHIC, $sString, $hFont, $tLayout, $hFormat, $hBrush)
+    _GDIPlus_GraphicsDrawStringEx($hGraphic, $sString, $hFont, $tLayout, $hFormat, $hBrush)
 
     _GDIPlus_FontDispose($hFont)
     _GDIPlus_FontFamilyDispose($hFamily)
