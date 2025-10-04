@@ -8,7 +8,7 @@
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("0342P         2027 02  7.5678  0.051854  0.982949   27.6336   73.3228   11.6950  20240917   9.0  4.0  342P/SOHO                                                MPC101101    ")]
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24G030  2025 01 13.4284  0.093522  1.000010  108.1250  220.3373  116.8475  20240917   9.0  4.0  C/2024 G3 (ATLAS)                                        MPEC 2024-RQ6    ")]
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24S010  2024 10 28.4864  0.008200  0.999813   69.9934  348.2559  142.0437  20241008  15.5  4.0  C/2024 S1 (ATLAS)                                        MPEC 2024-TD8    ")]
-$ALL_ORBITS = get_interesting_orbits()
+$ALL_ORBITS = get_interesting_orbits2("C/2025 A6")
 ;$ALL_ORBITS = get_interesting_orbits2()
 
 
@@ -52,7 +52,6 @@ While 1
 			ClipPut("Dim $perspective = [" & $viewAlt & ", " & $viewAz & ", " & $width / 2 & ", " & $height / 2 & ", " & $kmPerPixel & ", $simOffsetSeconds]")
             ;ClipPut("$kmPerPixel = " & $kmPerPixel & @CRLF & "$viewAz = " & $viewAz & @CRLF & "$viewAlt = " & $viewAlt)
             Exit
-
     EndSwitch
 
 
@@ -76,28 +75,37 @@ Func IsPressed($iMsg, $iwParam, $ilParam)
 
     $stepsize = 1 + _IsPressed(0x10) * 10
 
-    Switch $ilParam
-        Case 0x41
-            $viewAz -= 0.01 * $stepsize
-        Case 0x44
-            $viewAz += 0.01 * $stepsize
-        Case 0x57
-            $viewAlt += 0.01 * $stepsize
-        Case 0x53
-            $viewAlt -= 0.01 * $stepsize
-        Case 0xbc
-            $simOffsetSeconds -= 86400 * $stepsize
-        Case 0xbe
-            $simOffsetSeconds += 86400 * $stepsize
-        Case 0xbd
-            $kmPerPixel *= 1.1
-        Case 0xbb
-            $kmPerPixel /= 1.1
-    EndSwitch
+
+	Switch $ilParam
+		case 0x41
+			$viewAz -= 0.01 * $stepsize
+		case 0x44
+			$viewAz += 0.01 * $stepsize
+		case 0x57
+			$viewAlt += 0.01 * $stepsize
+		case 0x53
+			$viewAlt -= 0.01 * $stepsize
+		case 0xbc
+			$simOffsetSeconds -= 86400 * $stepsize
+		case 0xbe
+			$simOffsetSeconds += 86400 * $stepsize
+        case 0xbb
+			$kmPerPixel /= 1.05
+		case 0xbd
+			$kmPerPixel *= 1.05
+
+
+        case Else
+
+            ConsoleWrite($ilParam & @CRLF)
+
+	EndSwitch
 
     $LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $width / 2, $height / 2, $kmPerPixel)
     $hImage = _OrbitRenderer_RenderOrbits($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
-
+    ;$ssp = _Orbit_CalcSecondsSincePeriapsisAtRefTime($ALL_ORBITS[0], $simOffsetSeconds)
+    ;$ta = _Orbit_CalcHyperbolicTrueAnomaly($ALL_ORBITS[0], $ssp)
+    ;ConsoleWrite($ta & @CRLF)
     _GDIPlus_GraphicsDrawImage($hGraphicGui, $hImage, 0, 0)
 EndFunc   ;==>IsPressed
 
@@ -105,7 +113,7 @@ EndFunc   ;==>IsPressed
 
 _OrbitRenderer_Shutdown()
 
-Func get_interesting_orbits2()
+Func get_interesting_orbits2($search = "")
     Dim $ORBITS[0]
     $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
     $txt = BinaryToString($http[0])
@@ -114,27 +122,33 @@ Func get_interesting_orbits2()
     For $i = 1 To $objects[0]
         $orbit = _Orbit_FromMPCElements($objects[$i])
 
+		If $search <> "" And StringInStr($objects[$i], $search) Then
+			ConsoleWrite("+> " & $objects[$i] & @CRLF)
+			ReDim $ORBITS[$numObjects + 1]
+			$ORBITS[$numObjects] = $orbit
+			$numObjects += 1
+			ContinueLoop
+		EndIf
+
         ; If perihelion date or radius don't look good we move on
         If $orbit[12] < -1e7 Or $orbit[12] > 9e7 Then
             ;ConsoleWrite("-> (date) " & $objects[$i] & @CRLF)
             ContinueLoop
         EndIf
 
-        #cs
-                if $orbit[1] > 1.5 Then
-                    ;ConsoleWrite("-> (radius " & $orbit[1] & ") " & $objects[$i] & @CRLF)
-                    ContinueLoop
-                EndIf
-                if $orbit[6] > 18 Then
-                    ;ConsoleWrite("-> (magnitude " & $orbit[6] & ") " & $objects[$i] & @CRLF)
-                    ContinueLoop
-                EndIf
-        #ce
+		if $orbit[1] > 1.5 Then
+			;ConsoleWrite("-> (radius " & $orbit[1] & ") " & $objects[$i] & @CRLF)
+			ContinueLoop
+		EndIf
+		if $orbit[6] > 18 Then
+			;ConsoleWrite("-> (magnitude " & $orbit[6] & ") " & $objects[$i] & @CRLF)
+			ContinueLoop
+		EndIf
 
         ; Simulate the comet and see if it actually becomes bright
         $maxmag = 0
         $minmag = 25
-        For $refTime = -1e7 To 9e7 Step 100000
+        For $refTime = -1e7 To 3e7 Step 100000
             $mag = _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
             If $mag > $maxmag Then $maxmag = $mag
             If $mag < $minmag Then $minmag = $mag
@@ -164,10 +178,23 @@ Func get_interesting_orbits()
     For $i = 1 To $objects[0]
         $orbit = _Orbit_FromMPCElements($objects[$i])
 
-        ; If perihelion date or radius don't look good we move on
-        If $orbit[12] < -1e7 Or $orbit[12] > 3e7 Then ContinueLoop
 
         If $orbit[8] = "323P/SOHO" Then ContinueLoop
+
+        ; If perihelion date or radius don't look good we move on
+        If $orbit[12] < -1e7 Or $orbit[12] > 3e7 Then
+            ;ConsoleWrite("-> (date) " & $objects[$i] & @CRLF)
+            ContinueLoop
+        EndIf
+
+        if $orbit[1] > 1.5 Then
+            ;ConsoleWrite("-> (radius " & $orbit[1] & ") " & $objects[$i] & @CRLF)
+            ContinueLoop
+        EndIf
+        if $orbit[6] > 18 Then
+            ;ConsoleWrite("-> (magnitude " & $orbit[6] & ") " & $objects[$i] & @CRLF)
+            ContinueLoop
+        EndIf
 
         ; Simulate the comet and see if it actually becomes bright
         $maxmag = 0
@@ -178,7 +205,10 @@ Func get_interesting_orbits()
             If $mag < $minmag Then $minmag = $mag
         Next
 
-        If $minmag > 8 Then ContinueLoop
+        If $minmag > 8 Then
+            ;ConsoleWrite("-> (sim) " & $objects[$i] & @CRLF)
+            ContinueLoop
+        EndIf
 
         ConsoleWrite($objects[$i] & '"' & $orbit[8] & '"' & "    " & $minmag & @CRLF)
         ReDim $ORBITS[$numObjects + 1]
