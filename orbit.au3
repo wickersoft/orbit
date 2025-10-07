@@ -29,8 +29,102 @@ Func _Orbit_FromMPCElements($MPCElements, $isBackground = 0)
     Return $Orbit
 EndFunc   ;==>_Orbit_FromMPCElements
 
+Func _Orbit_FromHorizonsEphemeris($HorizonsOOElements)
+    Dim $Orbit[20]
+
+    $listItems = _Orbit_StringExtract($HorizonsOOElements, "$$SOE", "$$EOE")
+    $list = stringsplit($listItems, "A.D.", 1)
+    If $list[0] < 2 then Return $Orbit
+    $firstItem = $list[2]
+    
+    ; Parsed out of String
+    $horizonsEpoch = getHorizonsEpochTime($firstItem)
+    $periapsisDiffDays = round(Number(_Orbit_StringExtract($firstItem, "Tp= ", @LF)))
+    $Orbit[0] = _DateAdd("D", $periapsisDiffDays, $horizonsEpoch)                           ; Date of Periapsis
+    $Orbit[1] = Number(_Orbit_StringExtract($firstItem, "QR= ", " "))                       ; Periapsis Distance (AU)
+    $Orbit[2] = Number(_Orbit_StringExtract($firstItem, "EC= ", " "))                       ; Eccentricity
+    $Orbit[3] = Number(_Orbit_StringExtract($firstItem, "W = ", " ")) * 3.14159265359 / 180 ; Argument of Periapsis (radians)
+    $Orbit[4] = Number(_Orbit_StringExtract($firstItem, "OM= ", " ")) * 3.14159265359 / 180 ; Longitude of ascending node (radians)
+    $Orbit[5] = Number(_Orbit_StringExtract($firstItem, "IN= ", @LF)) * 3.14159265359 / 180 ; Inclination (radians)
+    $Orbit[6] = 0                                                                           ; Absolute magnitude
+    $Orbit[7] = 0                                                                           ; Slope parameter
+    $Orbit[8] = StringStripWS(_Orbit_StringExtract($HorizonsOOElements, "Target body name: ", "{"),  $STR_STRIPTRAILING)    ; Designation
+
+    ; Calculated for convenience and speed
+    $Orbit[9] = _Orbit_CalcSpecificAngMomentum($Orbit)                                      ; Specific angular momentum
+    $Orbit[10] = _Orbit_CalcMeanMotion($Orbit)                                              ; Mean angular motion
+    $Orbit[11] = _Orbit_CalcAsymptoticTrueAnomaly($Orbit)                                   ; Asymptotic True Anomaly (pi for non-hyperbolic)
+    $Orbit[12] = _Orbit_CalcRefTimeAtDate($Orbit[0])                                        ; Seconds from reference time to periapsis
+
+    Return $Orbit
+EndFunc   ;==>_Orbit_FromMPCElements
+
+
+; ========  STRING HELPER =============
+
+
+Func _Orbit_StringExtract($string, $start, $end, $offset = 1)
+	If $start = "" Then
+		$left_bound = $offset
+	Else
+		$left_bound = StringInStr($string, $start, 0, 1, $offset)
+	EndIf
+	If $left_bound = 0 Then Return SetExtended(-1, "")
+	$left_bound += StringLen($start)
+	If $end = "" Then
+		$right_bound = StringLen($string) + 1
+	Else
+		$right_bound = StringInStr($string, $end, 0, 1, $left_bound)
+	EndIf
+	If $right_bound = 0 Then Return SetExtended(-1, "")
+	Return SetExtended($left_bound, StringMid($string, $left_bound, $right_bound - $left_bound))
+EndFunc   ;==>stringextract
+
 
 ; ========  PARSED FROM CONFIG ========
+
+
+Func getHorizonsEpochTime($HorizonsDateItem)
+    ;$groups = StringRegExp($HorizonsDateItem, "[0-9]{4}-.{3}-[0-9]{2} [0-9]{2}:[0-9]{2}-[0-9]{2}\.", 2)
+    ;$HorizonsDateItem = "2025-Oct-01 00:00:01.0000"
+    
+    ConsoleWrite($HorizonsDateItem & @CRLF)
+    
+
+    $date = StringRegExp($HorizonsDateItem, "([0-9]{4})\-(.{3})\-([0-9]{2}) ([0-9]{2})\:([0-9]{2})\:([0-9]{2})\.", 3)
+
+    Switch $date[1]
+        case "Jan"
+            $date[1] = "01"
+        case "Feb"
+            $date[2] = "02"
+        case "Mar"
+            $date[1] = "03"
+        case "Apr"
+            $date[1] = "04"
+        case "May"
+            $date[2] = "05"
+        case "Jun"
+            $date[1] = "06"
+        case "Jul"
+            $date[1] = "07"
+        case "Aug"
+            $date[2] = "08"
+        case "Sep"
+            $date[1] = "09"
+        case "Oct"
+            $date[1] = "10"
+        case "Nov"
+            $date[2] = "11"
+        case "Dec"
+            $date[1] = "12"
+    EndSwitch
+
+    $reformattedDate = $date[0] & "/" & $date[1] & "/" & $date[2] & " " & $date[3] & ":" & $date[4] & ":" & $date[5]
+    ConsoleWrite("out date: " & $reformattedDate & @CRLF)
+
+    Return $date[0] & "/" & $date[1] & "/" & $date[2] 
+EndFunc   ;==>getPeriapsisTime
 
 
 Func getPeriapsisTime($MPCElements)
