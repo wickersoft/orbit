@@ -12,9 +12,13 @@
 ;$ALL_ORBITS = get_interesting_orbits2()
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24G030  2025 01 13.4284  0.093522  1.000010  108.1250  220.3373  116.8475  20240917   9.0  4.0  C/2024 G3 (ATLAS)                                        MPEC 2024-RQ6")]
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24S010  2024 10 28.4597  0.008313  1.000063   68.8091  347.1104  141.8851  20241001  15.5  4.0  C/2024 S1 (ATLAS)                                        MPEC 2024-T22")]
-Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 10 14.0000  0.836348  0.475520  302.4140   71.4315  2.046711  20240702   8.0  3.2  Europa Clipper                                           MPEC 2024-MB8")]
+;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 10 14.0000  0.836348  0.475520  302.4140   71.4315  2.046711  20240702   8.0  3.2  Europa Clipper                                           MPEC 2024-MB8")]
 ;$ALL_ORBITS = get_interesting_orbits()
 
+
+$orbit_euorpa_clipper = horizons_orbit_for_object("europa clipper")
+dim $ALL_ORBITS = [$orbit_euorpa_clipper, $ORBIT_MARS, $ORBIT_JUPITER]
+_ArrayDisplay($orbit_euorpa_clipper)
 
 
 ;Global $width = 600, $height = 448 ; Kohl's
@@ -114,10 +118,67 @@ Func IsPressed($iMsg, $iwParam, $ilParam)
 EndFunc   ;==>IsPressed
 
 
-
 _OrbitRenderer_Shutdown()
 
-Func get_interesting_orbits2($search = "")
+
+Func horizons_orbit_for_object($objectDesignation)
+    $ephem = horizons_ephemeris_for_object($objectDesignation)
+    $orbit = _Orbit_FromHorizonsEphemeris($ephem[0])
+    $orbit[8] = $ephem[1]
+    Return $orbit
+EndFunc
+
+Func horizons_ephemeris_for_object($objectDesignation)
+    $http = _https("ssd.jpl.nasa.gov", "/api/horizons_support.api?sstr=" & $objectDesignation & "&time-span=1&www=1")
+    $idLookup = BinaryToString($http[0])
+    
+    $object_name = stringextract($idLookup, '"name":"', '"')
+    $object_id = stringextract($idLookup, '"id":"', '"')
+    
+    $startDate = stringreplace(_NowCalcDate(), "/", "-")
+    $stopDate = stringreplace(_DateAdd("d", 1, _NowCalcDate()), "/", "-")
+    
+    $formData = '------geckoformboundary3adf8f70d6226f587f5514841d01791a' & @crlf & _
+                'Content-Disposition: form-data; name="www"' & @crlf & _
+                @crlf & _
+                '1' & @crlf & _
+                '------geckoformboundary3adf8f70d6226f587f5514841d01791a' & @crlf & _
+                'Content-Disposition: form-data; name="format"' & @crlf & _
+                '' & @crlf & _
+                'json' & @crlf & _
+                '------geckoformboundary3adf8f70d6226f587f5514841d01791a' & @crlf & _
+                'Content-Disposition: form-data; name="input"' & @crlf & _
+                '' & @crlf & _
+                '!$$SOF' & @crlf & _
+                'MAKE_EPHEM=YES' & @crlf & _
+                'COMMAND=' & $object_id & @crlf & _
+                'EPHEM_TYPE=ELEMENTS' & @crlf & _
+                "CENTER='500@10'" & @crlf & _
+                "START_TIME='" & $startDate & "'" & @crlf & _
+                "STOP_TIME='" & $stopDate & "'" & @crlf & _
+                "STEP_SIZE='1 DAYS'" & @crlf & _
+                "REF_SYSTEM='ICRF'" & @crlf & _
+                "REF_PLANE='ECLIPTIC'" & @crlf & _
+                "CAL_TYPE='M'" & @crlf & _
+                "OUT_UNITS='AU-D'" & @crlf & _
+                "ELM_LABELS='YES'" & @crlf & _
+                "TP_TYPE='RELATIVE'" & @crlf & _
+                "CSV_FORMAT='NO'" & @crlf & _
+                "OBJ_DATA='YES'" & @crlf & _
+                "" & @crlf & _
+                "------geckoformboundary3adf8f70d6226f587f5514841d01791a--" & @crlf
+                
+    ;ConsoleWrite($formData & @CRLF)
+    
+    $http = _https("ssd.jpl.nasa.gov", "api/horizons_file.api", $formData, "", "", "multipart/form-data; boundary=----geckoformboundary3adf8f70d6226f587f5514841d01791a")
+    $ephemeris = StringReplace(BinaryToString($http[0]), "\n", @LF)
+    
+    ;ConsoleWrite($ephemeris & @CRLF)
+    Dim $result = [$ephemeris, $object_name]
+    return $result
+EndFunc
+
+Func get_interesting_orbits()
     Dim $ORBITS[0]
     $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
     $txt = BinaryToString($http[0])
