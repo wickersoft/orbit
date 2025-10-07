@@ -8,8 +8,12 @@
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("0342P         2027 02  7.5678  0.051854  0.982949   27.6336   73.3228   11.6950  20240917   9.0  4.0  342P/SOHO                                                MPC101101    ")]
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24G030  2025 01 13.4284  0.093522  1.000010  108.1250  220.3373  116.8475  20240917   9.0  4.0  C/2024 G3 (ATLAS)                                        MPEC 2024-RQ6    ")]
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24S010  2024 10 28.4864  0.008200  0.999813   69.9934  348.2559  142.0437  20241008  15.5  4.0  C/2024 S1 (ATLAS)                                        MPEC 2024-TD8    ")]
-$ALL_ORBITS = get_interesting_orbits2("C/2025 A6")
+;$ALL_ORBITS = get_interesting_orbits2("C/2025 A6")
 ;$ALL_ORBITS = get_interesting_orbits2()
+;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24G030  2025 01 13.4284  0.093522  1.000010  108.1250  220.3373  116.8475  20240917   9.0  4.0  C/2024 G3 (ATLAS)                                        MPEC 2024-RQ6")]
+;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24S010  2024 10 28.4597  0.008313  1.000063   68.8091  347.1104  141.8851  20241001  15.5  4.0  C/2024 S1 (ATLAS)                                        MPEC 2024-T22")]
+Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 10 14.0000  0.836348  0.475520  302.4140   71.4315  2.046711  20240702   8.0  3.2  Europa Clipper                                           MPEC 2024-MB8")]
+;$ALL_ORBITS = get_interesting_orbits()
 
 
 
