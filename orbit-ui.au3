@@ -126,6 +126,57 @@ Func get_interesting_orbits2($search = "")
     For $i = 1 To $objects[0]
         $orbit = _Orbit_FromMPCElements($objects[$i])
 
+
+        If $orbit[8] = "323P/SOHO" Then ContinueLoop
+
+        ; If perihelion date or radius don't look good we move on
+        If $orbit[12] < -1e7 Or $orbit[12] > 3e7 Then
+            ;ConsoleWrite("-> (date) " & $objects[$i] & @CRLF)
+            ContinueLoop
+        EndIf
+
+        if $orbit[1] > 1.5 Then
+            ;ConsoleWrite("-> (radius " & $orbit[1] & ") " & $objects[$i] & @CRLF)
+            ContinueLoop
+        EndIf
+        if $orbit[6] > 18 Then
+            ;ConsoleWrite("-> (magnitude " & $orbit[6] & ") " & $objects[$i] & @CRLF)
+            ContinueLoop
+        EndIf
+
+        ; Simulate the comet and see if it actually becomes bright
+        $maxmag = 0
+        $minmag = 25
+        For $refTime = -1e6 To 3e7 Step 100000
+            $mag = _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
+            If $mag > $maxmag Then $maxmag = $mag
+            If $mag < $minmag Then $minmag = $mag
+        Next
+
+        If $minmag > 8 Then
+            ;ConsoleWrite("-> (sim) " & $objects[$i] & @CRLF)
+            ContinueLoop
+        EndIf
+
+        ConsoleWrite($objects[$i] & '"' & $orbit[8] & '"' & "    " & $minmag & @CRLF)
+        ReDim $ORBITS[$numObjects + 1]
+        $ORBITS[$numObjects] = $orbit
+        $numObjects += 1
+    Next
+
+    Return $ORBITS
+EndFunc   ;==>get_interesting_orbits
+
+
+Func get_interesting_orbits2($search = "")
+    Dim $ORBITS[0]
+    $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
+    $txt = BinaryToString($http[0])
+    $objects = StringSplit($txt, @LF, 1)
+    $numObjects = 0
+    For $i = 1 To $objects[0]
+        $orbit = _Orbit_FromMPCElements($objects[$i])
+
 		If $search <> "" And StringInStr($objects[$i], $search) Then
 			ConsoleWrite("+> " & $objects[$i] & @CRLF)
 			ReDim $ORBITS[$numObjects + 1]
@@ -172,53 +223,3 @@ Func get_interesting_orbits2($search = "")
     Return $ORBITS
 EndFunc   ;==>get_interesting_orbits2
 
-
-Func get_interesting_orbits()
-    Dim $ORBITS[0]
-    $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
-    $txt = BinaryToString($http[0])
-    $objects = StringSplit($txt, @LF, 1)
-    $numObjects = 0
-    For $i = 1 To $objects[0]
-        $orbit = _Orbit_FromMPCElements($objects[$i])
-
-
-        If $orbit[8] = "323P/SOHO" Then ContinueLoop
-
-        ; If perihelion date or radius don't look good we move on
-        If $orbit[12] < -1e7 Or $orbit[12] > 3e7 Then
-            ;ConsoleWrite("-> (date) " & $objects[$i] & @CRLF)
-            ContinueLoop
-        EndIf
-
-        if $orbit[1] > 1.5 Then
-            ;ConsoleWrite("-> (radius " & $orbit[1] & ") " & $objects[$i] & @CRLF)
-            ContinueLoop
-        EndIf
-        if $orbit[6] > 18 Then
-            ;ConsoleWrite("-> (magnitude " & $orbit[6] & ") " & $objects[$i] & @CRLF)
-            ContinueLoop
-        EndIf
-
-        ; Simulate the comet and see if it actually becomes bright
-        $maxmag = 0
-        $minmag = 25
-        For $refTime = -1e6 To 3e7 Step 100000
-            $mag = _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
-            If $mag > $maxmag Then $maxmag = $mag
-            If $mag < $minmag Then $minmag = $mag
-        Next
-
-        If $minmag > 8 Then
-            ;ConsoleWrite("-> (sim) " & $objects[$i] & @CRLF)
-            ContinueLoop
-        EndIf
-
-        ConsoleWrite($objects[$i] & '"' & $orbit[8] & '"' & "    " & $minmag & @CRLF)
-        ReDim $ORBITS[$numObjects + 1]
-        $ORBITS[$numObjects] = $orbit
-        $numObjects += 1
-    Next
-
-    Return $ORBITS
-EndFunc   ;==>get_interesting_orbits
