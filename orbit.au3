@@ -5,7 +5,7 @@
 $SUN_MU = 1.32712e11
 $_ORBIT_REFERENCE_DATE = _NowCalcDate() ; Arbitrary reference date for coordinated time frame
 
-Func _Orbit_FromMPCElements($MPCElements)
+Func _Orbit_FromMPCElements($MPCElements, $isBackground = 0)
     Dim $Orbit[20]
 
     ; Parsed out of String
@@ -24,6 +24,7 @@ Func _Orbit_FromMPCElements($MPCElements)
     $Orbit[10] = _Orbit_CalcMeanMotion($Orbit)                                          ; Mean angular motion
     $Orbit[11] = _Orbit_CalcAsymptoticTrueAnomaly($Orbit)                               ; Asymptotic True Anomaly (pi for non-hyperbolic)
     $Orbit[12] = _Orbit_CalcRefTimeAtDate($Orbit[0])                                    ; Seconds from reference time to periapsis
+    $Orbit[13] = $isBackground                                                          ; Background object (Drawn in black)
 
     Return $Orbit
 EndFunc   ;==>_Orbit_FromMPCElements

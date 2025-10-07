@@ -8,7 +8,9 @@
 #include "orbit.au3"
 
 Global $_ORBITRENDERER_HBITMAP, $_ORBITRENDERER_HIMAGE, $_ORBITRENDERER_HGRAPHIC, $_ORBITRENDERER_HWHITEBRUSH, $_ORBITRENDERER_HBLACKBRUSH, $_ORBITRENDERER_HREDBRUSH, $_ORBITRENDERER_HYELLOWBRUSH, $_ORBITRENDERER_HPENRED, $_ORBITRENDERER_HPENPALERED, $_ORBITRENDERER_HPENBLACK, $_ORBITRENDERER_HPENDGRAY, $_ORBITRENDERER_HPENLGRAY, $_ORBITRENDERER_IWIDTH, $_ORBITRENDERER_IHEIGHT
-$ORBIT_EARTH = _Orbit_FromMPCElements("0109P         2024 03 21.0000  0.981000  0.016210  180.0000    0.0000    0.0000  20240629   4.0  6.0  Earth                                                    105,  420")
+$ORBIT_EARTH =   _Orbit_FromMPCElements("0109P         2024 03 21.0000  0.981000  0.016210  180.0000    0.0000    0.0000  20240629   4.0  6.0  Earth                                                    105,  420", 1)
+$ORBIT_MARS    = _Orbit_FromMPCElements("0109P         2026 03 26.0000  1.381200  0.093492  286.6426  49.48375  1.847521  20240629   4.0  6.0  Mars                                                     105,  420", 1)
+$ORBIT_JUPITER = _Orbit_FromMPCElements("0109P         2023 01 21.0000  4.951251  0.048221  273.4630  100.5179  1.303563  20240629   4.0  6.0  Jupiter                                                  105,  420", 1)
 
 Func _OrbitRenderer_Startup($width, $height)
     _GDIPlus_Startup()
@@ -169,7 +171,11 @@ Func _OrbitRenderer_RenderOrbits(ByRef $orbitsToRender, $simOffsetSeconds, ByRef
 
     _OrbitRenderer_DrawBase($perspective)
     For $o In $orbitsToRender
-        _OrbitRenderer_DrawOrbit($o, $simOffsetSeconds, $perspective)
+        If $o[13] Then
+            _OrbitRenderer_DrawOrbit($o, $simOffsetSeconds, $perspective, $_ORBITRENDERER_HPENBLACK, $_ORBITRENDERER_HPENBLACK)
+        Else
+            _OrbitRenderer_DrawOrbit($o, $simOffsetSeconds, $perspective)
+        EndIf
     Next
     _OrbitRenderer_DrawOrbit($ORBIT_EARTH, $simOffsetSeconds, $perspective, $_ORBITRENDERER_HPENBLACK, $_ORBITRENDERER_HPENBLACK)
 
@@ -246,7 +252,7 @@ Func _OrbitRenderer_DrawOrbit($orbit, $simOffsetSeconds, $perspective, $hPenAbov
     $pixel = _OrbitRenderer_ProjectToGraphicCoords($cartesian, $perspective)
     _GDIPlus_GraphicsFillEllipse($_ORBITRENDERER_HGRAPHIC, $pixel[0] - 3, $pixel[1] - 3, 6, 6, $_ORBITRENDERER_HREDBRUSH)
     $bright = Round(_OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $simOffsetSeconds), 1)
-    If $orbit[8] = "Earth" Then
+    If $orbit[13] Then
         _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, $orbit[8], $pixel[0] - 60, $pixel[1] - 20, 400, 100, $_ORBITRENDERER_HREDBRUSH)
     Else
         _OrbitRenderer_GraphicsDrawStringExEx($_ORBITRENDERER_HGRAPHIC, $orbit[8] & "  " & $bright, $pixel[0] - 60, $pixel[1] - 20, 400, 100, $_ORBITRENDERER_HREDBRUSH)
