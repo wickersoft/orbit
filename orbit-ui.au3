@@ -208,3 +208,18 @@ Func get_interesting_orbits($search = "")
     Return $ORBITS
 EndFunc   ;==>get_interesting_orbits2
 
+Func get_orbit_from_mpc($search = "")
+    $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
+    $txt = BinaryToString($http[0])
+    $objects = StringSplit($txt, @LF, 1)
+    $numObjects = 0
+    For $i = 1 To $objects[0]
+		If $search <> "" And StringInStr($objects[$i], $search) Then 
+            ConsoleWrite("+> " & $objects[$i] & @CRLF)
+            Return _Orbit_FromMPCElements($objects[$i])
+        EndIf
+    Next
+
+    Dim $null_orbit[20]
+    Return $null_orbit
+EndFunc   ;==>get_interesting_orbits2
