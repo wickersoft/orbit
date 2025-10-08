@@ -5,35 +5,20 @@
 #include "..\Wickersoft_HTTP.au3"
 
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8")]
-;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("0342P         2027 02  7.5678  0.051854  0.982949   27.6336   73.3228   11.6950  20240917   9.0  4.0  342P/SOHO                                                MPC101101    ")]
-;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24G030  2025 01 13.4284  0.093522  1.000010  108.1250  220.3373  116.8475  20240917   9.0  4.0  C/2024 G3 (ATLAS)                                        MPEC 2024-RQ6    ")]
-;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24S010  2024 10 28.4864  0.008200  0.999813   69.9934  348.2559  142.0437  20241008  15.5  4.0  C/2024 S1 (ATLAS)                                        MPEC 2024-TD8    ")]
 ;$ALL_ORBITS = get_interesting_orbits2("C/2025 A6")
-;$ALL_ORBITS = get_interesting_orbits2()
-;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24G030  2025 01 13.4284  0.093522  1.000010  108.1250  220.3373  116.8475  20240917   9.0  4.0  C/2024 G3 (ATLAS)                                        MPEC 2024-RQ6")]
-;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK24S010  2024 10 28.4597  0.008313  1.000063   68.8091  347.1104  141.8851  20241001  15.5  4.0  C/2024 S1 (ATLAS)                                        MPEC 2024-T22")]
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 10 14.0000  0.836348  0.475520  302.4140   71.4315  2.046711  20240702   8.0  3.2  Europa Clipper                                           MPEC 2024-MB8")]
-;$ALL_ORBITS = get_interesting_orbits()
+$ALL_ORBITS = get_interesting_orbits("C/2025 A6")
+_ArrayAdd($ALL_ORBITS, get_orbit_from_mpc("3I/ATLAS"), Default, Default, Default, 1)
+_ArrayAdd($ALL_ORBITS, horizons_orbit_for_object("europa clipper"), Default, Default, Default, 1)
 
-
-$orbit_euorpa_clipper = horizons_orbit_for_object("europa clipper")
-dim $ALL_ORBITS = [$orbit_euorpa_clipper, $ORBIT_MARS, $ORBIT_JUPITER]
-_ArrayDisplay($orbit_euorpa_clipper)
-
+_ArrayAdd($ALL_ORBITS, $ORBIT_MARS, Default, Default, Default, 1)
+_ArrayAdd($ALL_ORBITS, $ORBIT_JUPITER, Default, Default, Default, 1)
 
 ;Global $width = 600, $height = 448 ; Kohl's
 Global $width = 1200, $height = 800 ; Other
 $simOffsetSeconds = 0 ;_orbit_calcreftimeatdate("2024/12/17")
 
-
 Dim $perspective = [1.22173047636111, 3.09279370299999, 300, 224, 1948717.1, $simOffsetSeconds]
-$kmPerPixel = 1e6
-$viewAz = 6 / 7 * 3.1415926535  ; A little off center to make the grid lines nice
-$viewAlt = 7 / 18 * 3.1415926535 ; Looking 20 degrees down
-
-
-
-
 $kmPerPixel = $perspective[4]
 $viewAz = $perspective[1]  ; A little off center to make the grid lines nice
 $viewAlt = $perspective[0] ; Looking 20 degrees down
@@ -61,14 +46,6 @@ While 1
             ;ClipPut("$kmPerPixel = " & $kmPerPixel & @CRLF & "$viewAz = " & $viewAz & @CRLF & "$viewAlt = " & $viewAlt)
             Exit
     EndSwitch
-
-
-    ;$LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $width / 2, $height / 2, $kmPerPixel)
-    ;$hImage = _OrbitRenderer_RenderOrbits($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
-    ;_GDIPlus_GraphicsDrawImage($hGraphicGui, $hImage, 0, 0)
-
-    ;$viewAz += 0.01
-    ;$simOffsetSeconds += 86400
 WEnd
 
 
@@ -79,10 +56,7 @@ Func IsPressed($iMsg, $iwParam, $ilParam)
     ;           previous key-state flag, and transition-state flag
     ConsoleWrite(StringFormat("->WM_KEYDOWN Received (%s, %s, %s)\n", $iMsg, $iwParam, $ilParam))
 
-    ;If $bitmapqueue.count <= 0 Then Return
-
     $stepsize = 1 + _IsPressed(0x10) * 10
-
 
 	Switch $ilParam
 		case 0x41
@@ -101,22 +75,14 @@ Func IsPressed($iMsg, $iwParam, $ilParam)
 			$kmPerPixel /= 1.05
 		case 0xbd
 			$kmPerPixel *= 1.05
-
-
         case Else
-
             ConsoleWrite($ilParam & @CRLF)
-
 	EndSwitch
 
     $LABEL_FRAME = _OrbitRenderer_GenerateAltAzPerspectiveMatrix($viewAlt, $viewAz, $width / 2, $height / 2, $kmPerPixel)
     $hImage = _OrbitRenderer_RenderOrbits($ALL_ORBITS, $simOffsetSeconds, $LABEL_FRAME)
-    ;$ssp = _Orbit_CalcSecondsSincePeriapsisAtRefTime($ALL_ORBITS[0], $simOffsetSeconds)
-    ;$ta = _Orbit_CalcHyperbolicTrueAnomaly($ALL_ORBITS[0], $ssp)
-    ;ConsoleWrite($ta & @CRLF)
     _GDIPlus_GraphicsDrawImage($hGraphicGui, $hImage, 0, 0)
 EndFunc   ;==>IsPressed
-
 
 _OrbitRenderer_Shutdown()
 
@@ -134,6 +100,13 @@ Func horizons_ephemeris_for_object($objectDesignation)
     
     $object_name = stringextract($idLookup, '"name":"', '"')
     $object_id = stringextract($idLookup, '"id":"', '"')
+    $object_kind = stringextract($idLookup, '"kind":"', '"')
+    
+    ;ConsoleWrite("Designation: " & $object_name & "  id: " & $object_id & @CRLF)
+    
+    If $object_kind = "SB" Then $object_id = "'DES=" & $object_id & "';"
+    ;ConsoleWrite("-> Object is of kind 'small body'" & @CRLF)
+    
     
     $startDate = stringreplace(_NowCalcDate(), "/", "-")
     $stopDate = stringreplace(_DateAdd("d", 1, _NowCalcDate()), "/", "-")
@@ -178,58 +151,7 @@ Func horizons_ephemeris_for_object($objectDesignation)
     return $result
 EndFunc
 
-Func get_interesting_orbits()
-    Dim $ORBITS[0]
-    $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
-    $txt = BinaryToString($http[0])
-    $objects = StringSplit($txt, @LF, 1)
-    $numObjects = 0
-    For $i = 1 To $objects[0]
-        $orbit = _Orbit_FromMPCElements($objects[$i])
-
-
-        If $orbit[8] = "323P/SOHO" Then ContinueLoop
-
-        ; If perihelion date or radius don't look good we move on
-        If $orbit[12] < -1e7 Or $orbit[12] > 3e7 Then
-            ;ConsoleWrite("-> (date) " & $objects[$i] & @CRLF)
-            ContinueLoop
-        EndIf
-
-        if $orbit[1] > 1.5 Then
-            ;ConsoleWrite("-> (radius " & $orbit[1] & ") " & $objects[$i] & @CRLF)
-            ContinueLoop
-        EndIf
-        if $orbit[6] > 18 Then
-            ;ConsoleWrite("-> (magnitude " & $orbit[6] & ") " & $objects[$i] & @CRLF)
-            ContinueLoop
-        EndIf
-
-        ; Simulate the comet and see if it actually becomes bright
-        $maxmag = 0
-        $minmag = 25
-        For $refTime = -1e6 To 3e7 Step 100000
-            $mag = _OrbitRenderer_CalcApparentMagnitudeAtRefTime($orbit, $refTime)
-            If $mag > $maxmag Then $maxmag = $mag
-            If $mag < $minmag Then $minmag = $mag
-        Next
-
-        If $minmag > 8 Then
-            ;ConsoleWrite("-> (sim) " & $objects[$i] & @CRLF)
-            ContinueLoop
-        EndIf
-
-        ConsoleWrite($objects[$i] & '"' & $orbit[8] & '"' & "    " & $minmag & @CRLF)
-        ReDim $ORBITS[$numObjects + 1]
-        $ORBITS[$numObjects] = $orbit
-        $numObjects += 1
-    Next
-
-    Return $ORBITS
-EndFunc   ;==>get_interesting_orbits
-
-
-Func get_interesting_orbits2($search = "")
+Func get_interesting_orbits($search = "")
     Dim $ORBITS[0]
     $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
     $txt = BinaryToString($http[0])
@@ -245,9 +167,11 @@ Func get_interesting_orbits2($search = "")
 			$numObjects += 1
 			ContinueLoop
 		EndIf
+        
+        If $orbit[8] = "323P/SOHO" Then ContinueLoop
 
         ; If perihelion date or radius don't look good we move on
-        If $orbit[12] < -1e7 Or $orbit[12] > 9e7 Then
+        If $orbit[12] < -1e7 Or $orbit[12] > 3e7 Then
             ;ConsoleWrite("-> (date) " & $objects[$i] & @CRLF)
             ContinueLoop
         EndIf
@@ -270,7 +194,7 @@ Func get_interesting_orbits2($search = "")
             If $mag < $minmag Then $minmag = $mag
         Next
 
-        If $minmag > 8 Then
+        If $minmag > 7 Then
             ;ConsoleWrite("-> (sim) " & $objects[$i] & @CRLF)
             ContinueLoop
         EndIf
