@@ -11,16 +11,16 @@ Global $MPC_TEXT = ""
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 10 14.0000  0.836348  0.475520  302.4140   71.4315  2.046711  20240702   8.0  3.2  Europa Clipper                                           MPEC 2024-MB8")]
 $ALL_ORBITS = get_interesting_orbits("C/2025 A6")
 _ArrayAdd($ALL_ORBITS, get_orbit_from_mpc("3I/ATLAS"), Default, Default, Default, 1)
-_ArrayAdd($ALL_ORBITS, horizons_orbit_for_object("europa clipper"), Default, Default, Default, 1)
+;_ArrayAdd($ALL_ORBITS, horizons_orbit_for_object("europa clipper"), Default, Default, Default, 1)
 
 _ArrayAdd($ALL_ORBITS, $ORBIT_MARS, Default, Default, Default, 1)
 _ArrayAdd($ALL_ORBITS, $ORBIT_JUPITER, Default, Default, Default, 1)
 
-;Global $width = 600, $height = 448 ; Kohl's
-Global $width = 1200, $height = 800 ; Other
+Global $width = 600, $height = 448 ; Kohl's
+;Global $width = 1200, $height = 800 ; Other
 $simOffsetSeconds = 0 ;_orbit_calcreftimeatdate("2024/12/17")
 
-Dim $perspective = [1.22173047636111, 3.09279370299999, 300, 224, 1948717.1, $simOffsetSeconds]
+Dim $perspective = [1.22173047636111, 2.432793703, 300, 224, 734450.980084772, $simOffsetSeconds]
 $kmPerPixel = $perspective[4]
 $viewAz = $perspective[1]  ; A little off center to make the grid lines nice
 $viewAlt = $perspective[0] ; Looking 20 degrees down
@@ -198,7 +198,7 @@ Func get_interesting_orbits($search = "")
             If $mag < $minmag Then $minmag = $mag
         Next
 
-        If $minmag > 7 Then
+        If $minmag > 6 Then
             ;ConsoleWrite("-> (sim) " & $objects[$i] & @CRLF)
             ContinueLoop
         EndIf
