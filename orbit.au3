@@ -29,7 +29,7 @@ Func _Orbit_FromMPCElements($MPCElements, $isBackground = 0)
     Return $Orbit
 EndFunc   ;==>_Orbit_FromMPCElements
 
-Func _Orbit_FromHorizonsEphemeris($HorizonsOOElements)
+Func _Orbit_FromHorizonsEphemeris($HorizonsOOElements, $isBackground = 0)
     Dim $Orbit[20]
 
     $listItems = _Orbit_StringExtract($HorizonsOOElements, "$$SOE", "$$EOE")
@@ -55,6 +55,7 @@ Func _Orbit_FromHorizonsEphemeris($HorizonsOOElements)
     $Orbit[10] = _Orbit_CalcMeanMotion($Orbit)                                              ; Mean angular motion
     $Orbit[11] = _Orbit_CalcAsymptoticTrueAnomaly($Orbit)                                   ; Asymptotic True Anomaly (pi for non-hyperbolic)
     $Orbit[12] = _Orbit_CalcRefTimeAtDate($Orbit[0])                                        ; Seconds from reference time to periapsis
+    $Orbit[13] = $isBackground                                                          ; Background object (Drawn in black)
 
     Return $Orbit
 EndFunc   ;==>_Orbit_FromMPCElements
