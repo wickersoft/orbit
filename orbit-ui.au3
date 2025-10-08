@@ -153,9 +153,11 @@ EndFunc
 
 Func get_interesting_orbits($search = "")
     Dim $ORBITS[0]
-    $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
-    $txt = BinaryToString($http[0])
-    $objects = StringSplit($txt, @LF, 1)
+    If $MPC_TEXT = "" Then
+        $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
+        $MPC_TEXT = BinaryToString($http[0])
+    EndIf
+    $objects = StringSplit($MPC_TEXT, @LF, 1)
     $numObjects = 0
     For $i = 1 To $objects[0]
         $orbit = _Orbit_FromMPCElements($objects[$i])
@@ -209,9 +211,11 @@ Func get_interesting_orbits($search = "")
 EndFunc   ;==>get_interesting_orbits2
 
 Func get_orbit_from_mpc($search = "")
-    $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
-    $txt = BinaryToString($http[0])
-    $objects = StringSplit($txt, @LF, 1)
+    If $MPC_TEXT = "" Then
+        $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
+        $MPC_TEXT = BinaryToString($http[0])
+    EndIf
+    $objects = StringSplit($MPC_TEXT, @LF, 1)
     $numObjects = 0
     For $i = 1 To $objects[0]
 		If $search <> "" And StringInStr($objects[$i], $search) Then 
