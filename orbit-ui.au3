@@ -4,6 +4,8 @@
 #include "orbitrenderer.au3"
 #include "..\Wickersoft_HTTP.au3"
 
+Global $MPC_TEXT = ""
+
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 09 27.7405  0.391423  1.000093  308.4925   21.5596  139.1109  20240702   8.0  3.2  C/2023 A3 (Tsuchinshan-ATLAS)                            MPEC 2024-MB8")]
 ;$ALL_ORBITS = get_interesting_orbits2("C/2025 A6")
 ;Dim $ALL_ORBITS = [ _Orbit_FromMPCElements("    CK23A030  2024 10 14.0000  0.836348  0.475520  302.4140   71.4315  2.046711  20240702   8.0  3.2  Europa Clipper                                           MPEC 2024-MB8")]
@@ -153,9 +155,11 @@ EndFunc
 
 Func get_interesting_orbits($search = "")
     Dim $ORBITS[0]
-    $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
-    $txt = BinaryToString($http[0])
-    $objects = StringSplit($txt, @LF, 1)
+    If $MPC_TEXT = "" Then
+        $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
+        $MPC_TEXT = BinaryToString($http[0])
+    EndIf
+    $objects = StringSplit($MPC_TEXT, @LF, 1)
     $numObjects = 0
     For $i = 1 To $objects[0]
         $orbit = _Orbit_FromMPCElements($objects[$i])
@@ -209,9 +213,11 @@ Func get_interesting_orbits($search = "")
 EndFunc   ;==>get_interesting_orbits2
 
 Func get_orbit_from_mpc($search = "")
-    $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
-    $txt = BinaryToString($http[0])
-    $objects = StringSplit($txt, @LF, 1)
+    If $MPC_TEXT = "" Then
+        $http = _https("www.minorplanetcenter.net", "iau/MPCORB/CometEls.txt")
+        $MPC_TEXT = BinaryToString($http[0])
+    EndIf
+    $objects = StringSplit($MPC_TEXT, @LF, 1)
     $numObjects = 0
     For $i = 1 To $objects[0]
 		If $search <> "" And StringInStr($objects[$i], $search) Then 
